@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wim Hof: Flow State</title>
+    <title>Wim Hof: Halo HUD v5 - Smooth Flow</title>
     <style>
         /* --- Palette & Design --- */
         :root {
-            /* Background: Deepest Ocean Gradient */
             --bg-radial: radial-gradient(circle at center, #0F3D3E 0%, #020c12 100%);
             
-            /* Text Colors */
             --text-white: #E0FBFC;
             --text-cyan: #00F2FF;
-            --text-muted: #537985;
+            --text-muted: #2d4650; 
             
-            /* Gradients */
-            --grad-gold: radial-gradient(circle at 30% 30%, #FFF59D, #FFD700, #FFA000);
-            --grad-grey: linear-gradient(145deg, #78909c, #37474f); /* Steel Grey */
-            --grad-red: radial-gradient(circle at center, #ff5e62, #8b0000); /* Blood Red */
-            --grad-blue: radial-gradient(circle at center, #00F2FF, #0072FF); /* Ocean Blue */
+            /* --- HALO COLORS --- */
+            --halo-gold-border: #FFD700;
+            --halo-gold-glow: rgba(255, 215, 0, 0.6);
+
+            --halo-grey-border: #546e7a;
+            --halo-grey-glow: rgba(84, 110, 122, 0.4);
             
-            /* Glows */
-            --glow-gold: drop-shadow(0 0 10px #FFD700);
-            --glow-blue: drop-shadow(0 0 30px #00F2FF);
+            --halo-red-border: #d32f2f;
+            --halo-red-glow: rgba(211, 47, 47, 0.8);
+
+            --halo-blue-border: #00F2FF;
+            --halo-blue-glow: rgba(0, 242, 255, 0.7);
         }
 
         * {
@@ -59,7 +60,7 @@
         }
 
         .subtitle {
-            color: var(--text-muted);
+            color: #537985;
             font-size: 0.9rem;
             margin-bottom: 20px;
             letter-spacing: 1px;
@@ -80,10 +81,9 @@
             position: relative;
             z-index: 10;
             max-height: 85vh;
-            overflow-y: auto; /* Allow scrolling if screen is small */
+            overflow-y: auto;
         }
 
-        /* Phase Description Box */
         .phase-desc {
             background: rgba(0,0,0,0.2);
             border-radius: 10px;
@@ -92,76 +92,25 @@
             text-align: left;
             border-left: 3px solid var(--text-cyan);
         }
-
-        .phase-desc h3 {
-            font-size: 0.85rem;
-            color: var(--text-cyan);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .phase-desc p {
-            font-size: 0.75rem;
-            color: #ccc;
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-        .phase-desc p:last-child { margin-bottom: 0; }
-
+        .phase-desc h3 { font-size: 0.85rem; color: var(--text-cyan); margin-bottom: 5px; text-transform: uppercase; }
+        .phase-desc p { font-size: 0.75rem; color: #ccc; line-height: 1.4; margin-bottom: 8px; }
 
         .input-row { display: flex; gap: 15px; margin-bottom: 15px; }
         .input-group { flex: 1; text-align: left; margin-bottom: 15px; }
 
-        label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-cyan);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #1C3E4F;
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.3s;
-        }
+        label { display: block; font-size: 0.75rem; color: var(--text-cyan); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #1C3E4F; border-radius: 8px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--text-cyan); }
 
         .btn {
             background: linear-gradient(135deg, #00C6FF, #0072FF);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
-            transition: transform 0.2s;
+            color: white; border: none; padding: 15px; width: 100%; border-radius: 50px;
+            font-size: 1rem; font-weight: 600; letter-spacing: 1px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3); transition: transform 0.2s;
         }
         .btn:hover { transform: translateY(-2px); }
 
-        /* --- Footer Credit --- */
-        .footer-credit {
-            position: fixed;
-            bottom: 15px;
-            width: 100%;
-            text-align: center;
-            color: #445566;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            pointer-events: none;
-            z-index: 5;
-        }
+        .footer-credit { position: fixed; bottom: 15px; width: 100%; text-align: center; color: #445566; font-size: 0.75rem; pointer-events: none; z-index: 5; }
 
         /* --- Visualizer View --- */
         .visualizer {
@@ -170,92 +119,157 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 75vh;
+            height: 100vh; 
             position: relative;
         }
 
-        .status-main {
-            font-size: 2.5rem;
-            font-weight: 300;
-            color: white;
-            min-height: 3.5rem;
-            text-align: center;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .status-sub {
-            font-size: 1.1rem;
-            color: var(--text-cyan);
-            margin-bottom: 40px;
-            min-height: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-align: center;
-        }
-
-        /* --- THE HEXAGON SYSTEM --- */
-        .hex-wrapper {
+        /* --- THE HALO SYSTEM --- */
+        .halo-wrapper {
             position: relative;
-            width: 220px;
-            height: 220px;
+            width: 300px; 
+            height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            margin-top: 50px; 
         }
 
-        .hexagon {
-            width: 110px;
-            height: 125px;
-            /* Default Gold */
-            background: var(--grad-gold); 
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        /* TOP LABEL CONTAINER */
+        .top-label {
+            position: absolute;
+            /* MOVED DOWN: Was -190px, now -135px to get closer to halo */
+            top: -135px; 
+            width: 340px; 
+            display: flex;
+            justify-content: center;
+            gap: 40px; /* Increased gap slightly for balance */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 5; /* Ensure it stays above halo if they overlap */
+        }
+        .top-label.active { opacity: 1; }
+
+        /* Individual Breath Words (Inhale/Exhale) */
+        .breath-word {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
             
+            /* Start very dim/transparent */
+            color: var(--text-white);
+            opacity: 0.2; 
+            text-shadow: none;
+            transform: scale(0.9);
+            
+            /* Slower transition for "Liquid" feel (switched from 1.0s to 1.2s ease-in-out) */
+            transition: opacity 1.2s ease-in-out, 
+                        color 1.2s ease-in-out, 
+                        text-shadow 1.2s ease-in-out,
+                        transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Active State: Glows White/Cyan and Scales up */
+        /* Note: Removed gradient background-clip because it causes "snapping" */
+        .breath-word.highlight {
+            color: #ffffff;
+            opacity: 1;
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.8), 0 0 30px rgba(0, 242, 255, 0.4);
+            transform: scale(1.15); /* Gentle swell */
+        }
+
+        /* Simple Label Mode (For HOLD / RECOVERY phases) */
+        .simple-label {
+            width: 100%;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-cyan);
+            text-shadow: 0 0 25px rgba(0, 242, 255, 0.4);
+        }
+
+        /* RING */
+        .halo-ring {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: transparent;
+            border: 25px solid var(--halo-gold-border);
+            box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow);
             transform: scale(1);
-            filter: var(--glow-gold);
-            
-            position: relative; 
+            position: absolute; 
             z-index: 1;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s ease-out;
+            will-change: transform, border-color, box-shadow;
         }
 
-        /* RED OVERLAY for Retention Gradient Transition */
-        .hexagon::after {
+        /* RED OVERLAY */
+        .halo-ring::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--grad-red);
-            clip-path: inherit; 
+            top: -25px; left: -25px; right: -25px; bottom: -25px; 
+            border-radius: 50%;
+            border: 25px solid var(--halo-red-border);
+            box-shadow: 0 0 50px var(--halo-red-glow), inset 0 0 50px var(--halo-red-glow);
             opacity: 0; 
             z-index: 2;
             pointer-events: none;
+            mix-blend-mode: lighten;
         }
 
-        .start-text {
+        /* --- CENTER HUD TEXT --- */
+        .center-hud {
             position: absolute;
-            z-index: 3;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: #584c03;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
-            transition: opacity 0.3s;
+            text-align: center;
+            width: 180px; 
+        }
+
+        .hud-main {
+            font-size: 2.2rem; 
+            font-weight: 700;
+            color: var(--text-white);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            line-height: 1.2;
+            margin-bottom: 0;
+        }
+
+        .hud-sub {
+            font-size: 0.9rem;
+            color: var(--text-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
+            height: 1.2em;
         }
 
         /* --- Controls --- */
         .controls {
-            margin-top: 50px;
+            margin-top: 100px; 
             display: flex;
             gap: 15px;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s;
+            z-index: 20;
         }
         .controls.active { opacity: 1; pointer-events: all; }
 
         .btn-sm {
             padding: 10px 25px;
             border-radius: 20px;
-            border: 1px solid var(--text-muted);
-            background: transparent;
+            border: 1px solid #537985;
+            background: rgba(0,0,0,0.5);
             color: var(--text-white);
             cursor: pointer;
             transition: 0.2s;
@@ -263,23 +277,22 @@
             font-size: 0.8rem;
             letter-spacing: 1px;
         }
-        .btn-sm:hover { background: var(--text-muted); color: #000; }
+        .btn-sm:hover { background: #537985; color: #000; }
         .btn-red { border-color: #ff5555; color: #ff5555; }
         .btn-red:hover { background: #ff5555; color: white; }
 
-        /* Extend Button (Grey Theme) */
+        /* Extend Button */
         .btn-extend {
             position: absolute;
-            right: -60px;
+            right: -20px; 
             top: 50%;
             transform: translateY(-50%);
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            /* Grey Border and Text */
+            background: rgba(20, 20, 20, 0.8);
             border: 1px solid #777;
-            color: #999;
+            color: #ccc;
             font-size: 0.9rem;
             font-weight: 600;
             display: flex;
@@ -289,12 +302,9 @@
             opacity: 0; 
             pointer-events: none;
             transition: all 0.2s;
+            z-index: 15;
         }
-        .btn-extend:hover { 
-            background: #999; 
-            color: #000; 
-            border-color: #999;
-        }
+        .btn-extend:hover { background: #aaa; color: #000; border-color: #aaa; }
         .btn-extend.visible { opacity: 1; pointer-events: all; }
 
         /* Utility */
@@ -302,15 +312,22 @@
         .fade-in { animation: fadeIn 0.8s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Retention Heartbeat */
+        /* Animations */
         @keyframes heartbeat {
-            0% { transform: scale(0.7); }
-            50% { transform: scale(0.73); }
-            100% { transform: scale(0.7); }
+            0% { transform: scale(0.85); box-shadow: 0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow); }
+            50% { transform: scale(0.88); box-shadow: 0 0 35px var(--halo-grey-glow), inset 0 0 35px var(--halo-grey-glow); }
+            100% { transform: scale(0.85); box-shadow: 0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow); }
+        }
+
+        /* Recovery Heartbeat (Blue) - EXPANDED SIZE */
+        @keyframes heartbeatBlueExpanded {
+            /* Pulse around scale 2.2 (Full Size) */
+            0% { transform: scale(2.2); box-shadow: 0 0 40px var(--halo-blue-glow), inset 0 0 40px var(--halo-blue-glow); }
+            50% { transform: scale(2.25); box-shadow: 0 0 70px var(--halo-blue-glow), inset 0 0 60px var(--halo-blue-glow); }
+            100% { transform: scale(2.2); box-shadow: 0 0 40px var(--halo-blue-glow), inset 0 0 40px var(--halo-blue-glow); }
         }
 
         #dynamicStyles { display: none; }
-
     </style>
 </head>
 <body>
@@ -319,22 +336,17 @@
 
     <div class="glass-panel text-center" id="settingsPanel">
         <div style="text-align: center;">
-            <h1>Deep Flow</h1>
+            <h1>Halo Flow</h1>
             <p class="subtitle">Wim Hof Method</p>
         </div>
 
         <div class="phase-desc">
-        <h3>1. Deep Breathing</h3>
-<p>Breathe from the diaphragm. Inhale deeply and fully, then exhale naturally without force.</p>
-<br>
-
-<h3>2. Retention</h3>
-<p>After a normal exhale, hold your breath for as long as is comfortable.</p>
-<br>
-
-<h3>3. Recovery</h3>
-<p>Inhale deeply, filling the lungs completely, then hold for 15 seconds to re-oxygenate the body.</p>
-
+            <h3>1. Deep Breathing</h3>
+            <p>Halo expands (Inhale) & contracts (Exhale).</p>
+            <h3>2. Retention</h3>
+            <p>Halo turns grey. Hold until urge to breathe.</p>
+            <h3>3. Recovery</h3>
+            <p>Halo turns blue. Inhale and hold for 15s.</p>
         </div>
 
         <div class="input-group">
@@ -373,18 +385,24 @@
     <div class="footer-credit">Designed by Astor Knudsen</div>
 
     <div class="visualizer" id="visualizerPanel">
-        <div class="status-main" id="txtMain">Ready</div>
-        <div class="status-sub" id="txtSub">Tap Hexagon to Begin</div>
+        <div class="halo-wrapper" id="haloWrapper" onclick="handleTap()">
+            
+            <div id="topLabel" class="top-label">
+            </div>
 
-        <div class="hex-wrapper" id="hexWrapper" onclick="handleTap()">
-            <div class="hexagon" id="hexagon"></div>
-            <div class="start-text" id="startText">START</div>
+            <div class="halo-ring" id="haloRing"></div>
+            
+            <div class="center-hud">
+                <div class="hud-main" id="txtMain">START</div>
+                <div class="hud-sub" id="txtSub">Tap Ring</div>
+            </div>
+
             <button class="btn-extend" id="btnExtend" onclick="extendTimer(event)">+15</button>
         </div>
 
         <div class="controls" id="controls">
             <button class="btn-sm btn-red" onclick="endSession()">End</button>
-            <button class="btn-sm" onclick="skipStep()">Skip &#9193;</button>
+            <button class="btn-sm" onclick="skipStep()">Skip</button>
         </div>
     </div>
 
@@ -400,16 +418,17 @@
             breathCount: 0,
             timerVal: 0,
             interval: null,
+            textTimeout: null,
             history: []
         };
 
         const els = {
             settings: document.getElementById('settingsPanel'),
             visualizer: document.getElementById('visualizerPanel'),
-            hex: document.getElementById('hexagon'),
-            startText: document.getElementById('startText'),
+            halo: document.getElementById('haloRing'),
             txtMain: document.getElementById('txtMain'),
             txtSub: document.getElementById('txtSub'),
+            topLabel: document.getElementById('topLabel'),
             controls: document.getElementById('controls'),
             btnExtend: document.getElementById('btnExtend'),
             styleSheet: document.getElementById('dynamicStyles'),
@@ -448,9 +467,9 @@
             const inhalePercent = (inhale / total) * 100;
             const css = `
                 @keyframes breatheCycle {
-                    0% { transform: scale(1); filter: drop-shadow(0 0 5px #FFA500); }
-                    ${inhalePercent}% { transform: scale(2.5); filter: drop-shadow(0 0 20px #FFD700); }
-                    100% { transform: scale(1); filter: drop-shadow(0 0 5px #FFA500); }
+                    0% { transform: scale(1); box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow); }
+                    ${inhalePercent}% { transform: scale(2.2); box-shadow: 0 0 70px var(--halo-gold-glow), inset 0 0 50px var(--halo-gold-glow); }
+                    100% { transform: scale(1); box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow); }
                 }
             `;
             els.styleSheet.innerText = css;
@@ -458,7 +477,7 @@
 
         function setRedOverlay(opacity, durationStr) {
             const transitionCSS = `
-                .hexagon::after {
+                .halo-ring::after {
                     transition: opacity ${durationStr} ease-in-out;
                     opacity: ${opacity};
                 }
@@ -471,30 +490,63 @@
             state.phase = PHASE_BREATHING;
             state.breathCount = 1;
 
-            els.startText.style.opacity = '0';
             els.controls.classList.add('active');
             els.btnExtend.classList.remove('visible');
-            els.txtMain.innerText = "Breathe";
-            els.txtSub.innerText = `1 / ${config.breaths}`;
+            
+            // Setup Text HTML for side-by-side labels
+            els.topLabel.innerHTML = `
+                <span id="lblInhale" class="breath-word">INHALE</span>
+                <span id="lblExhale" class="breath-word">EXHALE</span>
+            `;
+            els.topLabel.classList.add('active');
+            
+            els.txtSub.innerText = "";
+            els.txtMain.innerText = `1 / ${config.breaths}`;
 
-            // Reset Visuals
-            els.hex.style.transition = "none"; 
-            els.hex.style.background = "var(--grad-gold)";
-            els.hex.style.filter = "var(--glow-gold)";
+            // Reset Halo
+            els.halo.style.transition = "none"; 
+            els.halo.style.borderColor = "var(--halo-gold-border)";
+            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
             setRedOverlay(0, "0s"); 
 
             const totalDuration = config.inhale + config.exhale;
-            els.hex.style.animation = `breatheCycle ${totalDuration}s ease-in-out infinite`;
-            els.hex.addEventListener('animationiteration', handleBreathIteration);
+            els.halo.style.animation = `breatheCycle ${totalDuration}s ease-in-out infinite`;
+            els.halo.addEventListener('animationiteration', handleBreathIteration);
+
+            breathTextCycle();
+        }
+
+        function breathTextCycle() {
+            if (state.phase !== PHASE_BREATHING) return;
+            
+            const i = document.getElementById('lblInhale');
+            const e = document.getElementById('lblExhale');
+
+            // Start Inhale: Highlight Left, Dim Right
+            if(i) i.classList.add('highlight');
+            if(e) e.classList.remove('highlight');
+            
+            if(state.textTimeout) clearTimeout(state.textTimeout);
+            
+            // Wait for inhale duration, then switch
+            state.textTimeout = setTimeout(() => {
+                if (state.phase === PHASE_BREATHING) {
+                    // Start Exhale: Dim Left, Highlight Right
+                    if(i) i.classList.remove('highlight');
+                    if(e) e.classList.add('highlight');
+                }
+            }, config.inhale * 1000);
         }
 
         function handleBreathIteration() {
             if (state.phase !== PHASE_BREATHING) return;
+            
             if (state.breathCount < config.breaths) {
                 state.breathCount++;
-                els.txtSub.innerText = `${state.breathCount} / ${config.breaths}`;
+                els.txtMain.innerText = `${state.breathCount} / ${config.breaths}`;
+                breathTextCycle();
             } else {
-                els.hex.removeEventListener('animationiteration', handleBreathIteration);
+                els.halo.removeEventListener('animationiteration', handleBreathIteration);
                 startRetentionPhase();
             }
         }
@@ -504,36 +556,40 @@
             state.phase = PHASE_RETENTION;
             state.timerVal = config.hold;
 
-            // 1. Stop Breathing
-            els.hex.style.animation = 'none';
-            void els.hex.offsetWidth; 
+            // Stop Breathing logic
+            els.halo.style.animation = 'none';
+            if(state.textTimeout) clearTimeout(state.textTimeout);
+            void els.halo.offsetWidth; 
 
-            // 2. Smooth Deflate
-            els.hex.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), background 1s ease";
+            // Update Text: Switch to single label
+            els.topLabel.innerHTML = '<div class="simple-label">HOLD</div>';
+            els.topLabel.classList.add('active');
+            els.txtSub.innerText = ""; 
+
+            // Deflate to Grey
+            els.halo.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease, box-shadow 1s ease";
             
             requestAnimationFrame(() => {
-                els.hex.style.transform = "scale(0.7)";
-                els.hex.style.background = "var(--grad-grey)";
-                els.hex.style.filter = "none";
+                els.halo.style.transform = "scale(0.85)";
+                els.halo.style.borderColor = "var(--halo-grey-border)";
+                els.halo.style.boxShadow = "0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow)";
             });
 
-            // 3. Heartbeat (Delayed)
+            // Heartbeat (Grey)
             setTimeout(() => {
                 if (state.phase === PHASE_RETENTION) {
-                    els.hex.style.animation = "heartbeat 1.5s ease-in-out infinite";
+                    els.halo.style.animation = "heartbeat 1.5s ease-in-out infinite";
                 }
             }, 2000); 
 
-            // 4. Red Overlay
+            // Red Overlay
             setTimeout(() => {
                 if(state.phase === PHASE_RETENTION) {
                     setRedOverlay(1, `${state.timerVal}s`); 
                 }
             }, 100);
 
-            els.txtMain.innerText = "HOLD";
-            els.txtMain.style.color = "#ccc";
-            els.txtSub.innerText = "Relax";
+            els.txtMain.innerText = formatTime(state.timerVal);
             els.btnExtend.classList.add('visible');
 
             state.interval = setInterval(() => {
@@ -549,6 +605,7 @@
         function extendTimer(e) {
             e.stopPropagation();
             state.timerVal += 15;
+            els.txtMain.innerText = formatTime(state.timerVal); 
             
             const btn = els.btnExtend;
             btn.style.transform = "translateY(-50%) scale(1.2)";
@@ -562,26 +619,37 @@
             stopAllLogic();
 
             els.btnExtend.classList.remove('visible');
-
-            setRedOverlay(0, "0.3s");
-
-            els.hex.style.animation = 'none'; 
+            setRedOverlay(0, "0.1s");
+            els.halo.style.animation = 'none'; 
             
+            // Expand to FULL SIZE (2.2) & Turn Blue
             setTimeout(() => {
-                els.hex.style.transition = "transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.5s";
-                els.hex.style.transform = "scale(2.5)";
-                els.hex.style.background = "var(--grad-blue)";
-                els.hex.style.filter = "var(--glow-blue)";
+                els.halo.style.transition = "transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.5s ease, box-shadow 0.5s ease";
+                
+                // Full expansion
+                els.halo.style.transform = "scale(2.2)"; 
+                els.halo.style.borderColor = "var(--halo-blue-border)";
+                els.halo.style.boxShadow = "0 0 40px var(--halo-blue-glow), inset 0 0 30px var(--halo-blue-glow)";
+                
+                // Add Blue Heartbeat Pulse at Expanded Size
+                setTimeout(() => {
+                    if (state.phase === PHASE_RECOVERY) {
+                        els.halo.style.animation = "heartbeatBlueExpanded 1.5s ease-in-out infinite";
+                    }
+                }, 1500);
+
             }, 50);
 
-            els.txtMain.innerText = "INHALE";
-            els.txtMain.style.color = "white";
-            els.txtSub.innerText = "Hold";
+            // Update Text
+            els.topLabel.innerHTML = '<div class="simple-label">RECOVERY</div>';
+            els.txtSub.innerText = "";
 
             setTimeout(() => {
                 let rTimer = config.recover;
+                els.txtMain.innerText = `${rTimer}s`;
+                
                 state.interval = setInterval(() => {
-                    els.txtMain.innerText = `Recovery: ${rTimer}s`;
+                    els.txtMain.innerText = `${rTimer}s`;
                     rTimer--;
                     if (rTimer < 0) finishRound();
                 }, 1000);
@@ -590,13 +658,15 @@
 
         function finishRound() {
             stopAllLogic();
-            els.hex.style.transition = 'transform 2s ease, background 2s';
-            els.hex.style.transform = 'scale(1)';
-            els.hex.style.background = 'var(--grad-gold)';
-            els.hex.style.filter = 'var(--glow-gold)';
+            els.halo.style.animation = 'none'; 
+            els.halo.style.transition = 'transform 2s ease, border-color 2s, box-shadow 2s';
+            els.halo.style.transform = 'scale(1)';
+            els.halo.style.borderColor = "var(--halo-gold-border)";
+            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
 
+            els.topLabel.innerHTML = ""; // Clear top label
             els.txtMain.innerText = "Done";
-            els.txtSub.innerText = "Resetting...";
+            els.txtSub.innerText = "Relax";
             setTimeout(endSession, 3000);
         }
 
@@ -604,7 +674,7 @@
         function skipStep() {
             stopAllLogic();
             if (state.phase === PHASE_BREATHING) {
-                els.hex.removeEventListener('animationiteration', handleBreathIteration);
+                els.halo.removeEventListener('animationiteration', handleBreathIteration);
                 startRetentionPhase();
             } else if (state.phase === PHASE_RETENTION) {
                 startRecoveryPhase();
@@ -615,24 +685,26 @@
 
         function stopAllLogic() {
             if (state.interval) clearInterval(state.interval);
-            els.hex.style.animation = 'none';
-            els.hex.removeEventListener('animationiteration', handleBreathIteration);
+            if (state.textTimeout) clearTimeout(state.textTimeout);
+            els.halo.style.animation = 'none';
+            els.halo.removeEventListener('animationiteration', handleBreathIteration);
         }
 
         function resetToIdle() {
             state.phase = PHASE_IDLE;
-            els.startText.style.opacity = '1';
-            els.hex.style.transform = 'scale(1)';
-            els.hex.style.background = 'var(--grad-gold)';
-            els.hex.style.filter = 'var(--glow-gold)';
-            els.hex.style.transition = 'none';
+            
+            els.halo.style.transform = 'scale(1)';
+            els.halo.style.borderColor = "var(--halo-gold-border)";
+            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
+            els.halo.style.transition = 'none';
             setRedOverlay(0, "0s");
             
             els.controls.classList.remove('active');
             els.btnExtend.classList.remove('visible');
-            els.txtMain.innerText = "Ready";
-            els.txtMain.style.color = "white";
-            els.txtSub.innerText = "Tap Hexagon to Begin";
+            els.topLabel.classList.remove('active');
+            
+            els.txtMain.innerText = "START";
+            els.txtSub.innerText = "Tap Ring";
         }
 
         function formatTime(s) {
