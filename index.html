@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wim Hof: Flow State</title>
+    <style>
+        /* --- Palette & Design --- */
+        :root {
+            /* Background: Deepest Ocean Gradient */
+            --bg-radial: radial-gradient(circle at center, #0F3D3E 0%, #020c12 100%);
+            
+            /* Text Colors */
+            --text-white: #E0FBFC;
+            --text-cyan: #00F2FF;
+            --text-muted: #537985;
+            
+            /* Gradients */
+            --grad-gold: radial-gradient(circle at 30% 30%, #FFF59D, #FFD700, #FFA000);
+            --grad-grey: linear-gradient(145deg, #78909c, #37474f); /* Steel Grey */
+            --grad-red: radial-gradient(circle at center, #ff5e62, #8b0000); /* Blood Red */
+            --grad-blue: radial-gradient(circle at center, #00F2FF, #0072FF); /* Ocean Blue */
+            
+            /* Glows */
+            --glow-gold: drop-shadow(0 0 10px #FFD700);
+            --glow-blue: drop-shadow(0 0 30px #00F2FF);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg-radial);
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- UI Elements --- */
+        h1 {
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #00F2FF, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Settings Panel */
+        .glass-panel {
+            background: rgba(8, 18, 28, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            transition: opacity 0.4s ease;
+            position: relative;
+            z-index: 10;
+            max-height: 85vh;
+            overflow-y: auto; /* Allow scrolling if screen is small */
+        }
+
+        /* Phase Description Box */
+        .phase-desc {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            border-left: 3px solid var(--text-cyan);
+        }
+
+        .phase-desc h3 {
+            font-size: 0.85rem;
+            color: var(--text-cyan);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .phase-desc p {
+            font-size: 0.75rem;
+            color: #ccc;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        .phase-desc p:last-child { margin-bottom: 0; }
+
+
+        .input-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .input-group { flex: 1; text-align: left; margin-bottom: 15px; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-cyan);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #1C3E4F;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--text-cyan); }
+
+        .btn {
+            background: linear-gradient(135deg, #00C6FF, #0072FF);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+
+        /* --- Footer Credit --- */
+        .footer-credit {
+            position: fixed;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            color: #445566;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* --- Visualizer View --- */
+        .visualizer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 75vh;
+            position: relative;
+        }
+
+        .status-main {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: white;
+            min-height: 3.5rem;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .status-sub {
+            font-size: 1.1rem;
+            color: var(--text-cyan);
+            margin-bottom: 40px;
+            min-height: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        /* --- THE HEXAGON SYSTEM --- */
+        .hex-wrapper {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .hexagon {
+            width: 110px;
+            height: 125px;
+            /* Default Gold */
+            background: var(--grad-gold); 
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            
+            transform: scale(1);
+            filter: var(--glow-gold);
+            
+            position: relative; 
+            z-index: 1;
+        }
+
+        /* RED OVERLAY for Retention Gradient Transition */
+        .hexagon::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--grad-red);
+            clip-path: inherit; 
+            opacity: 0; 
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .start-text {
+            position: absolute;
+            z-index: 3;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #584c03;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            margin-top: 50px;
+            display: flex;
+            gap: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .controls.active { opacity: 1; pointer-events: all; }
+
+        .btn-sm {
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--text-muted);
+            background: transparent;
+            color: var(--text-white);
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .btn-sm:hover { background: var(--text-muted); color: #000; }
+        .btn-red { border-color: #ff5555; color: #ff5555; }
+        .btn-red:hover { background: #ff5555; color: white; }
+
+        /* Extend Button (Grey Theme) */
+        .btn-extend {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            /* Grey Border and Text */
+            border: 1px solid #777;
+            color: #999;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0; 
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+        .btn-extend:hover { 
+            background: #999; 
+            color: #000; 
+            border-color: #999;
+        }
+        .btn-extend.visible { opacity: 1; pointer-events: all; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Retention Heartbeat */
+        @keyframes heartbeat {
+            0% { transform: scale(0.7); }
+            50% { transform: scale(0.73); }
+            100% { transform: scale(0.7); }
+        }
+
+        #dynamicStyles { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <style id="dynamicStyles"></style>
+
+    <div class="glass-panel text-center" id="settingsPanel">
+        <div style="text-align: center;">
+            <h1>Deep Flow</h1>
+            <p class="subtitle">Wim Hof Method</p>
+        </div>
+
+        <div class="phase-desc">
+        <h3>1. Deep Breathing</h3>
+<p>Breathe from the diaphragm. Inhale deeply and fully, then exhale naturally without force.</p>
+<br>
+
+<h3>2. Retention</h3>
+<p>After a normal exhale, hold your breath for as long as is comfortable.</p>
+<br>
+
+<h3>3. Recovery</h3>
+<p>Inhale deeply, filling the lungs completely, then hold for 15 seconds to re-oxygenate the body.</p>
+
+        </div>
+
+        <div class="input-group">
+            <label>Number of Breaths</label>
+            <input type="number" id="nbBreaths" value="30">
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Inhale (sec)</label>
+                <input type="number" id="tInhale" value="1.8" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Exhale (sec)</label>
+                <input type="number" id="tExhale" value="1.8" step="0.1">
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Retention (sec)</label>
+                <input type="number" id="tHold" value="60">
+            </div>
+            <div class="input-group">
+                <label>Recovery (sec)</label>
+                <input type="number" id="tRecover" value="15">
+            </div>
+        </div>
+
+        <button class="btn" onclick="toVisualizer()">Go to Session</button>
+        
+        <div style="margin-top:20px; text-align:left; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <label style="color:#666;">Previous Holds:</label>
+            <div id="historyLog" style="color:#aaa; font-size:0.85rem; max-height:80px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <div class="footer-credit">Designed by Astor Knudsen</div>
+
+    <div class="visualizer" id="visualizerPanel">
+        <div class="status-main" id="txtMain">Ready</div>
+        <div class="status-sub" id="txtSub">Tap Hexagon to Begin</div>
+
+        <div class="hex-wrapper" id="hexWrapper" onclick="handleTap()">
+            <div class="hexagon" id="hexagon"></div>
+            <div class="start-text" id="startText">START</div>
+            <button class="btn-extend" id="btnExtend" onclick="extendTimer(event)">+15</button>
+        </div>
+
+        <div class="controls" id="controls">
+            <button class="btn-sm btn-red" onclick="endSession()">End</button>
+            <button class="btn-sm" onclick="skipStep()">Skip &#9193;</button>
+        </div>
+    </div>
+
+    <script>
+        const PHASE_IDLE = 'idle';
+        const PHASE_BREATHING = 'breathing';
+        const PHASE_RETENTION = 'retention';
+        const PHASE_RECOVERY = 'recovery';
+
+        let config = {};
+        let state = {
+            phase: PHASE_IDLE,
+            breathCount: 0,
+            timerVal: 0,
+            interval: null,
+            history: []
+        };
+
+        const els = {
+            settings: document.getElementById('settingsPanel'),
+            visualizer: document.getElementById('visualizerPanel'),
+            hex: document.getElementById('hexagon'),
+            startText: document.getElementById('startText'),
+            txtMain: document.getElementById('txtMain'),
+            txtSub: document.getElementById('txtSub'),
+            controls: document.getElementById('controls'),
+            btnExtend: document.getElementById('btnExtend'),
+            styleSheet: document.getElementById('dynamicStyles'),
+            historyLog: document.getElementById('historyLog')
+        };
+
+        // --- Navigation ---
+        function toVisualizer() {
+            config.breaths = parseInt(document.getElementById('nbBreaths').value);
+            config.inhale = parseFloat(document.getElementById('tInhale').value);
+            config.exhale = parseFloat(document.getElementById('tExhale').value);
+            config.hold = parseInt(document.getElementById('tHold').value);
+            config.recover = parseInt(document.getElementById('tRecover').value);
+
+            generateKeyframes(config.inhale, config.exhale);
+            els.settings.classList.add('hidden');
+            els.visualizer.style.display = 'flex';
+            els.visualizer.classList.add('fade-in');
+            resetToIdle();
+        }
+
+        function endSession() {
+            stopAllLogic();
+            els.visualizer.style.display = 'none';
+            els.settings.classList.remove('hidden');
+            renderHistory();
+        }
+
+        function handleTap() {
+            if (state.phase === PHASE_IDLE) startBreathingPhase();
+        }
+
+        // --- Animations ---
+        function generateKeyframes(inhale, exhale) {
+            const total = inhale + exhale;
+            const inhalePercent = (inhale / total) * 100;
+            const css = `
+                @keyframes breatheCycle {
+                    0% { transform: scale(1); filter: drop-shadow(0 0 5px #FFA500); }
+                    ${inhalePercent}% { transform: scale(2.5); filter: drop-shadow(0 0 20px #FFD700); }
+                    100% { transform: scale(1); filter: drop-shadow(0 0 5px #FFA500); }
+                }
+            `;
+            els.styleSheet.innerText = css;
+        }
+
+        function setRedOverlay(opacity, durationStr) {
+            const transitionCSS = `
+                .hexagon::after {
+                    transition: opacity ${durationStr} ease-in-out;
+                    opacity: ${opacity};
+                }
+            `;
+            els.styleSheet.innerText += transitionCSS;
+        }
+
+        // --- Phase 1: Breathing ---
+        function startBreathingPhase() {
+            state.phase = PHASE_BREATHING;
+            state.breathCount = 1;
+
+            els.startText.style.opacity = '0';
+            els.controls.classList.add('active');
+            els.btnExtend.classList.remove('visible');
+            els.txtMain.innerText = "Breathe";
+            els.txtSub.innerText = `1 / ${config.breaths}`;
+
+            // Reset Visuals
+            els.hex.style.transition = "none"; 
+            els.hex.style.background = "var(--grad-gold)";
+            els.hex.style.filter = "var(--glow-gold)";
+            setRedOverlay(0, "0s"); 
+
+            const totalDuration = config.inhale + config.exhale;
+            els.hex.style.animation = `breatheCycle ${totalDuration}s ease-in-out infinite`;
+            els.hex.addEventListener('animationiteration', handleBreathIteration);
+        }
+
+        function handleBreathIteration() {
+            if (state.phase !== PHASE_BREATHING) return;
+            if (state.breathCount < config.breaths) {
+                state.breathCount++;
+                els.txtSub.innerText = `${state.breathCount} / ${config.breaths}`;
+            } else {
+                els.hex.removeEventListener('animationiteration', handleBreathIteration);
+                startRetentionPhase();
+            }
+        }
+
+        // --- Phase 2: Retention ---
+        function startRetentionPhase() {
+            state.phase = PHASE_RETENTION;
+            state.timerVal = config.hold;
+
+            // 1. Stop Breathing
+            els.hex.style.animation = 'none';
+            void els.hex.offsetWidth; 
+
+            // 2. Smooth Deflate
+            els.hex.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), background 1s ease";
+            
+            requestAnimationFrame(() => {
+                els.hex.style.transform = "scale(0.7)";
+                els.hex.style.background = "var(--grad-grey)";
+                els.hex.style.filter = "none";
+            });
+
+            // 3. Heartbeat (Delayed)
+            setTimeout(() => {
+                if (state.phase === PHASE_RETENTION) {
+                    els.hex.style.animation = "heartbeat 1.5s ease-in-out infinite";
+                }
+            }, 2000); 
+
+            // 4. Red Overlay
+            setTimeout(() => {
+                if(state.phase === PHASE_RETENTION) {
+                    setRedOverlay(1, `${state.timerVal}s`); 
+                }
+            }, 100);
+
+            els.txtMain.innerText = "HOLD";
+            els.txtMain.style.color = "#ccc";
+            els.txtSub.innerText = "Relax";
+            els.btnExtend.classList.add('visible');
+
+            state.interval = setInterval(() => {
+                els.txtMain.innerText = formatTime(state.timerVal);
+                state.timerVal--;
+                if (state.timerVal < 0) {
+                    clearInterval(state.interval);
+                    startRecoveryPhase();
+                }
+            }, 1000);
+        }
+
+        function extendTimer(e) {
+            e.stopPropagation();
+            state.timerVal += 15;
+            
+            const btn = els.btnExtend;
+            btn.style.transform = "translateY(-50%) scale(1.2)";
+            setTimeout(() => btn.style.transform = "translateY(-50%) scale(1)", 200);
+        }
+
+        // --- Phase 3: Recovery ---
+        function startRecoveryPhase() {
+            logHistory(config.hold + (state.timerVal < 0 ? 0 : 0)); 
+            state.phase = PHASE_RECOVERY;
+            stopAllLogic();
+
+            els.btnExtend.classList.remove('visible');
+
+            setRedOverlay(0, "0.3s");
+
+            els.hex.style.animation = 'none'; 
+            
+            setTimeout(() => {
+                els.hex.style.transition = "transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.5s";
+                els.hex.style.transform = "scale(2.5)";
+                els.hex.style.background = "var(--grad-blue)";
+                els.hex.style.filter = "var(--glow-blue)";
+            }, 50);
+
+            els.txtMain.innerText = "INHALE";
+            els.txtMain.style.color = "white";
+            els.txtSub.innerText = "Hold";
+
+            setTimeout(() => {
+                let rTimer = config.recover;
+                state.interval = setInterval(() => {
+                    els.txtMain.innerText = `Recovery: ${rTimer}s`;
+                    rTimer--;
+                    if (rTimer < 0) finishRound();
+                }, 1000);
+            }, 1000);
+        }
+
+        function finishRound() {
+            stopAllLogic();
+            els.hex.style.transition = 'transform 2s ease, background 2s';
+            els.hex.style.transform = 'scale(1)';
+            els.hex.style.background = 'var(--grad-gold)';
+            els.hex.style.filter = 'var(--glow-gold)';
+
+            els.txtMain.innerText = "Done";
+            els.txtSub.innerText = "Resetting...";
+            setTimeout(endSession, 3000);
+        }
+
+        // --- Helpers ---
+        function skipStep() {
+            stopAllLogic();
+            if (state.phase === PHASE_BREATHING) {
+                els.hex.removeEventListener('animationiteration', handleBreathIteration);
+                startRetentionPhase();
+            } else if (state.phase === PHASE_RETENTION) {
+                startRecoveryPhase();
+            } else if (state.phase === PHASE_RECOVERY) {
+                finishRound();
+            }
+        }
+
+        function stopAllLogic() {
+            if (state.interval) clearInterval(state.interval);
+            els.hex.style.animation = 'none';
+            els.hex.removeEventListener('animationiteration', handleBreathIteration);
+        }
+
+        function resetToIdle() {
+            state.phase = PHASE_IDLE;
+            els.startText.style.opacity = '1';
+            els.hex.style.transform = 'scale(1)';
+            els.hex.style.background = 'var(--grad-gold)';
+            els.hex.style.filter = 'var(--glow-gold)';
+            els.hex.style.transition = 'none';
+            setRedOverlay(0, "0s");
+            
+            els.controls.classList.remove('active');
+            els.btnExtend.classList.remove('visible');
+            els.txtMain.innerText = "Ready";
+            els.txtMain.style.color = "white";
+            els.txtSub.innerText = "Tap Hexagon to Begin";
+        }
+
+        function formatTime(s) {
+            if (s < 0) return "0:00";
+            const min = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${min}:${sec < 10 ? '0'+sec : sec}`;
+        }
+
+        function logHistory(val) {
+             const now = new Date();
+             const ts = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
+             state.history.unshift({ time: ts, dur: "Round" });
+        }
+
+        function renderHistory() {
+            const container = els.historyLog;
+            container.innerHTML = "";
+            state.history.forEach(h => {
+                const div = document.createElement('div');
+                div.innerText = `${h.time} - Complete`;
+                div.style.padding = "4px 0";
+                div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                container.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
