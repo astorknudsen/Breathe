@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F7FA" media="(prefers-color-scheme: light)">
 <title>O2 Flow</title>
 <style>
 :root{
@@ -35,22 +39,22 @@ body.dark{
   --toggle-track:#252836;--toggle-thumb:#e8eaf0;
   --remove-hover-bg:#2a1215;
 }
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
-body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow:hidden;position:relative;transition:background 0.35s ease,color 0.35s ease;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-height:100dvh;overflow:hidden;position:relative;transition:background 0.35s ease,color 0.35s ease;overscroll-behavior:none;-webkit-text-size-adjust:100%;}
 
-.hamburger-btn{position:fixed;top:18px;left:18px;z-index:200;width:38px;height:38px;background:var(--card-bg);border:none;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 12px rgba(0,0,0,0.08);transition:background 0.2s;}
+.hamburger-btn{position:fixed;top:max(18px,env(safe-area-inset-top));left:max(18px,env(safe-area-inset-left));z-index:200;width:44px;height:44px;background:var(--card-bg);border:none;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 12px rgba(0,0,0,0.08);transition:background 0.2s;touch-action:manipulation;}
 .hamburger-btn:hover{background:var(--hamburger-hover);}
 .hamburger-btn span{display:block;width:18px;height:2px;background:var(--text-sub);border-radius:2px;transition:all 0.3s;}
 .hamburger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
 .hamburger-btn.open span:nth-child(2){opacity:0;}
 .hamburger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-.drawer{position:fixed;top:0;left:0;height:100%;width:220px;background:var(--card-bg);z-index:190;box-shadow:4px 0 24px rgba(0,0,0,0.07);transform:translateX(-100%);transition:transform 0.35s cubic-bezier(0.2,0.8,0.2,1);display:flex;flex-direction:column;padding-top:72px;}
+.drawer{position:fixed;top:0;left:0;height:100%;width:220px;background:var(--card-bg);z-index:190;box-shadow:4px 0 24px rgba(0,0,0,0.07);transform:translateX(-100%);transition:transform 0.35s cubic-bezier(0.2,0.8,0.2,1);display:flex;flex-direction:column;padding-top:calc(72px + env(safe-area-inset-top));padding-left:env(safe-area-inset-left);}
 .drawer.open{transform:translateX(0);}
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.18);z-index:180;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .drawer-overlay.open{opacity:1;pointer-events:auto;}
 .drawer-nav{display:flex;flex-direction:column;gap:4px;padding:0 12px;}
-.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:600;color:var(--text-muted);transition:background 0.15s,color 0.15s;border:none;background:none;text-align:left;width:100%;}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:600;color:var(--text-muted);transition:background 0.15s,color 0.15s;border:none;background:none;text-align:left;width:100%;min-height:44px;touch-action:manipulation;}
 .drawer-item:hover{background:var(--hover-subtle);color:var(--text-main);}
 .drawer-item.active{background:var(--hover-blue);color:var(--accent-blue);}
 .drawer-icon{width:18px;height:18px;flex-shrink:0;}
@@ -63,7 +67,34 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 .visualizer-layer.mode-menu .halo-ring{opacity:1!important;box-shadow:0 15px 45px rgba(52,116,240,0.15);border-width:25px;}
 .visualizer-layer.mode-menu .hud-main{font-size:16rem;font-weight:800;letter-spacing:-2px;transform:translateX(110px) translateY(20px);}
 .visualizer-layer.mode-menu .hud-sub{font-size:1.6rem;letter-spacing:5px;font-weight:700;margin-top:60px;margin-left:20px;}
-@media(max-width:480px){.visualizer-layer.mode-menu .hud-main{font-size:11rem;transform:translateX(80px) translateY(15px);}.visualizer-layer.mode-menu .halo-ring{border-width:20px;}}
+@media(max-width:480px){
+  :root{--ring-size:115px;}
+  .visualizer-layer.mode-menu .hud-main{font-size:10rem;transform:translateX(70px) translateY(12px);}
+  .visualizer-layer.mode-menu .hud-sub{font-size:1.3rem;letter-spacing:4px;margin-top:44px;}
+  .visualizer-layer.mode-menu .halo-ring{border-width:18px;}
+  .visualizer-layer.mode-menu{top:18%;}
+  .menu-wrapper,.session-view,.stats-view{height:68vh;}
+  .menu-grid{gap:12px;}
+  .menu-card-img{height:90px;}
+  .menu-card-content{padding:14px;}
+  .menu-card h3{font-size:1rem;}
+  .intro-left img{height:150px;}
+  .intro-right{padding:20px;}
+  .intro-desc{font-size:0.9rem;margin-bottom:18px;}
+  .settings-layout{padding:20px 18px;}
+  .modal-card{border-radius:18px;max-width:96%;max-height:88dvh;overflow-y:auto;}
+  .stat-cards-row{gap:8px;}
+  .stat-card{padding:12px 8px;}
+  .stat-card-val{font-size:1.4rem;}
+  .stepper-ctrl button{width:36px;height:36px;}
+  .slot-rounds-btn{width:34px;height:34px;}
+  .controls{gap:8px;}
+  .btn-sm{padding:11px 16px;font-size:0.8rem;}
+  .session-start-bar{margin-top:8px;}
+  .btn-session-start{padding:14px;}
+  .top-label{font-size:0.95rem;letter-spacing:2px;}
+  .hud-main{font-size:1.6rem;}
+}
 .box-path{position:absolute;width:150px;height:150px;border:4px solid var(--border-color);border-radius:8px;z-index:1;opacity:0;pointer-events:none;transition:opacity 0.5s ease;}
 .box-path.active{opacity:1;}
 .box-dot{position:absolute;width:18px;height:18px;background:var(--accent-blue);border-radius:50%;transform:translate(-50%,-50%);left:0%;top:100%;box-shadow:0 0 12px var(--accent-blue);z-index:2;}
@@ -74,7 +105,7 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 .nadi-graphic.block-left #fingerLeft{fill:var(--accent-blue);transform:translateX(6px);}
 .nadi-graphic.block-right #fingerRight{fill:var(--accent-blue);transform:translateX(-6px);}
 
-.menu-wrapper{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;transition:opacity 0.5s ease,transform 0.5s ease;overflow-y:auto;padding-bottom:40px;mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.menu-wrapper{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;transition:opacity 0.5s ease,transform 0.5s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
 .menu-wrapper.fade-out{opacity:0;transform:translateY(40px);pointer-events:none;}
 .menu-title{text-align:center;font-size:0.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;flex-shrink:0;}
 .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:90%;max-width:900px;}
@@ -88,7 +119,7 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 @media(max-width:600px){.menu-grid{grid-template-columns:1fr;gap:15px;}.menu-card-img{height:110px;}.menu-card-content{padding:15px;}}
 
 /* SESSION */
-.session-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;padding-bottom:40px;opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.session-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
 .session-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
 .session-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
 .session-queue{display:flex;flex-direction:column;gap:12px;width:90%;max-width:600px;padding-top:8px;}
@@ -100,7 +131,7 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 /* Inline round stepper on header */
 .slot-rounds{display:flex;align-items:center;gap:0;background:var(--surface-2);border-radius:8px;overflow:hidden;flex-shrink:0;}
 .slot-rounds-label{font-size:0.65rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0 6px;white-space:nowrap;}
-.slot-rounds-btn{background:none;border:none;cursor:pointer;width:26px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;}
+.slot-rounds-btn{background:none;border:none;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;touch-action:manipulation;}
 .slot-rounds-btn:hover{background:var(--hover-blue-strong);}
 .slot-rounds-val{font-size:0.85rem;font-weight:700;color:var(--text-main);min-width:22px;text-align:center;}
 
@@ -119,7 +150,7 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 .stepper-item{display:flex;flex-direction:column;gap:5px;flex:1;min-width:90px;}
 .stepper-item label{font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;}
 .stepper-ctrl{display:flex;align-items:center;background:var(--input-bg);border:1px solid var(--border-color);border-radius:9px;overflow:hidden;}
-.stepper-ctrl button{background:none;border:none;cursor:pointer;width:28px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1.1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;}
+.stepper-ctrl button{background:none;border:none;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1.1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;touch-action:manipulation;}
 .stepper-ctrl button:hover{background:var(--hover-blue);}
 .stepper-val{flex:1;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-main);}
 
@@ -145,12 +176,12 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow
 .picker-option h4{font-size:0.9rem;font-weight:600;margin-bottom:3px;}
 .picker-option p{font-size:0.75rem;color:var(--text-muted);}
 .session-start-bar{display:flex;gap:10px;width:90%;max-width:600px;margin-top:4px;flex-shrink:0;}
-.btn-session-start{flex:1;padding:16px;border-radius:14px;background:var(--accent-blue);color:#FFF;font-size:1rem;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(52,116,240,0.2);transition:transform 0.1s;}
+.btn-session-start{flex:1;padding:16px;border-radius:14px;background:var(--accent-blue);color:#FFF;font-size:1rem;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(52,116,240,0.2);transition:transform 0.1s;min-height:52px;touch-action:manipulation;}
 .btn-session-start:active{transform:scale(0.98);}
 .btn-session-start:disabled{opacity:0.4;cursor:not-allowed;}
 
 /* STATS */
-.stats-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;padding-bottom:40px;opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 92%,transparent 100%);}
+.stats-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 92%,transparent 100%);}
 .stats-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
 .stats-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
 .stats-inner{width:90%;max-width:700px;padding-top:8px;display:flex;flex-direction:column;gap:16px;}
@@ -191,13 +222,13 @@ h2{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spac
 .input-row{display:flex;gap:12px;margin-bottom:12px;}
 .input-group{flex:1;text-align:left;}
 label{display:block;font-size:0.65rem;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;font-weight:700;}
-input[type=number]{width:100%;padding:12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:12px;font-size:1rem;font-weight:600;outline:none;text-align:center;transition:0.2s;color:var(--text-main);}
+input[type=number]{width:100%;padding:12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:12px;font-size:max(16px,1rem);font-weight:600;outline:none;text-align:center;transition:0.2s;color:var(--text-main);}
 input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-focus-bg);}
 .button-row{display:flex;gap:10px;margin-top:10px;}
-.btn-primary,.btn-secondary{flex:1;padding:16px;border-radius:14px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform 0.1s;border:none;text-align:center;}
+.btn-primary,.btn-secondary{flex:1;padding:16px;border-radius:14px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform 0.1s;border:none;text-align:center;min-height:52px;touch-action:manipulation;}
 .btn-primary{background:var(--accent-blue);color:white;box-shadow:0 8px 20px rgba(52,116,240,0.2);}
 .btn-secondary{background:var(--btn-secondary-bg);color:var(--text-sub);}
-.btn-primary:active,.btn-secondary:active{transform:scale(0.98);}
+.btn-primary:active,.btn-secondary:active{transform:scale(0.97);}
 .btn-back{background:none;border:none;color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;font-weight:700;margin-top:20px;cursor:pointer;letter-spacing:1px;align-self:flex-start;}
 .btn-back:hover{color:var(--text-main);}
 .btn-full{width:100%;margin-top:5px;}
@@ -209,15 +240,15 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
 .top-watermark.active{opacity:1;}
 .top-label{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:300px;text-align:center;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--text-muted);opacity:0;transition:opacity 0.1s ease,color 0.3s ease;z-index:2;}
 .top-label.active{opacity:1;}
-.controls{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:15px;opacity:0;pointer-events:none;transition:opacity 0.5s;z-index:20;}
+.controls{position:fixed;bottom:max(40px,calc(20px + env(safe-area-inset-bottom)));left:50%;transform:translateX(-50%);display:flex;gap:12px;opacity:0;pointer-events:none;transition:opacity 0.5s;z-index:20;}
 .controls.active{opacity:1;pointer-events:all;}
-.btn-sm{padding:10px 25px;border-radius:30px;border:none;background:var(--btn-sm-bg);color:var(--text-sub);cursor:pointer;font-weight:600;font-size:0.8rem;transition:background 0.15s;}
+.btn-sm{padding:12px 22px;min-height:44px;border-radius:30px;border:none;background:var(--btn-sm-bg);color:var(--text-sub);cursor:pointer;font-weight:600;font-size:0.85rem;transition:background 0.15s;touch-action:manipulation;}
 .btn-sm:hover{background:var(--btn-sm-hover);}
 .btn-red{background:var(--btn-red-bg);color:var(--btn-red-text);}
 .btn-extend{position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:var(--btn-extend-bg);border:1px solid var(--btn-extend-border);color:var(--text-muted);font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:all 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.08);}
 .btn-extend.visible{opacity:1;pointer-events:all;}
 .btn-extend:hover{color:var(--accent-blue);border-color:var(--accent-blue);}
-.seq-indicator{position:fixed;top:18px;right:18px;z-index:20;background:var(--card-bg);border-radius:10px;padding:8px 14px;font-size:0.75rem;font-weight:700;color:var(--text-muted);box-shadow:0 2px 12px rgba(0,0,0,0.08);opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.seq-indicator{position:fixed;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));z-index:20;background:var(--card-bg);border-radius:10px;padding:8px 14px;font-size:0.75rem;font-weight:700;color:var(--text-muted);box-shadow:0 2px 12px rgba(0,0,0,0.08);opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .seq-indicator.active{opacity:1;}
 .toggle-pill{width:32px;height:18px;border-radius:9px;background:var(--toggle-track);display:flex;align-items:center;padding:2px;transition:background 0.25s;flex-shrink:0;}
 .toggle-pill.on{background:var(--accent-blue);}
@@ -239,6 +270,11 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
 @keyframes bhastrikaRapid{
   0%  {transform:scale(1.0);border-width:20px;}
   50% {transform:scale(1.45);border-width:9px;}
+  100%{transform:scale(1.0);border-width:20px;}
+}
+@keyframes restPulse{
+  0%  {transform:scale(1.0);border-width:20px;}
+  50% {transform:scale(1.06);border-width:19px;}
   100%{transform:scale(1.0);border-width:20px;}
 }
 @keyframes pulseHoldBig{0%{transform:scale(1.8);}10%{transform:scale(1.83);}20%{transform:scale(1.8);}100%{transform:scale(1.8);}}
@@ -416,13 +452,15 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
 
 <div class="controls" id="controls">
   <button class="btn-sm btn-red" onclick="endSession()">Stop</button>
+  <button class="btn-sm" id="btnPause" onclick="togglePause()" title="Pause">&#9646;&#9646;</button>
   <button class="btn-sm" onclick="skipStep()">Skip</button>
 </div>
 
 <script>
 // ── DARK MODE ─────────────────────────────────────────────────────
 (function(){
-  const dark=localStorage.getItem('o2_dark')==='1';
+  // Default is dark; only switch to light if user explicitly saved '0'
+  const dark=localStorage.getItem('o2_dark')!=='0';
   if(dark)document.body.classList.add('dark');
   function syncToggle(){
     const on=document.body.classList.contains('dark');
@@ -488,10 +526,13 @@ function recordSession(mode,durationMin){
 }
 
 // ── PHASES ────────────────────────────────────────────────────────
-const PHASE_IDLE='idle',PHASE_ACTIVE='active',PHASE_WIM_BREATHING='w_breathing',PHASE_WIM_RETENTION='w_retention',PHASE_WIM_RECOVERY='w_recovery',PHASE_NADI='nadi_active',PHASE_578='578_active',PHASE_MEDITATION='meditation',PHASE_BHRAMARI='bhramari_active',PHASE_KAPAL='kapal_active',PHASE_COHERENT='coherent_active',PHASE_TACTICAL='tactical_active',PHASE_SIGH='sigh_active',PHASE_BHASTRIKA='bhastrika_active',PHASE_UJJAYI='ujjayi_active',PHASE_SITALI='sitali_active';
+const PHASE_IDLE='idle',PHASE_ACTIVE='active',PHASE_WIM_BREATHING='w_breathing',PHASE_WIM_RETENTION='w_retention',PHASE_WIM_RECOVERY='w_recovery',PHASE_NADI='nadi_active',PHASE_578='578_active',PHASE_MEDITATION='meditation',PHASE_BHRAMARI='bhramari_active',PHASE_KAPAL='kapal_active',PHASE_COHERENT='coherent_active',PHASE_TACTICAL='tactical_active',PHASE_SIGH='sigh_active',PHASE_BHASTRIKA='bhastrika_active',PHASE_UJJAYI='ujjayi_active',PHASE_SITALI='sitali_active',PHASE_REST='rest';
 let config={},activeMode='wimhof';
-let state={phase:PHASE_IDLE,breathCount:0,wimCurrentRound:1,nadiStep:0,timerVal:0,maxTimerVal:0,interval:null,textTimeout:null,phaseTimeout:null};
+let state={phase:PHASE_IDLE,breathCount:0,wimCurrentRound:1,nadiStep:0,timerVal:0,maxTimerVal:0,interval:null,textTimeout:null,phaseTimeout:null,paused:false,intervalCb:null};
 let sessionStartTime=0,audioCtx;
+
+// Saves the callback so pause can restart the exact same interval on resume
+function startInterval(cb){state.intervalCb=cb;state.interval=setInterval(cb,1000);}
 let sessionQueue=[],sessionQueueIndex=0,isSessionMode=false,currentView='home',pickerTargetSlot=-1;
 
 // ── NAV ───────────────────────────────────────────────────────────
@@ -806,10 +847,33 @@ function launchMode(){
   ensureAudio();
   if(activeMode==='wimhof'){if(!config.wimTotalRounds)config.wimTotalRounds=1;state.wimCurrentRound=1;}
   const noKeyframe=['fiveseveneight','meditation','kapalabhati','tactical','sigh','bhastrika'];
-  if(activeMode==='box'){els.boxPath.classList.add('active');els.halo.style.opacity='0';}
-  else{els.boxPath.classList.remove('active');els.halo.style.opacity='1';
-    if(!noKeyframe.includes(activeMode))generateKeyframes(config.inhale,config.exhale);
-    if(activeMode==='nadi')els.nadiGraphic.classList.add('visible');}
+  if(activeMode==='box'){
+    els.boxPath.classList.add('active');
+    // Fade halo out smoothly
+    els.halo.style.transition='opacity 0.6s ease';
+    els.halo.style.opacity='0';
+  } else {
+    els.boxPath.classList.remove('active');
+    // Freeze halo at its current computed position — read ALL animated props before stopping
+    const cs=window.getComputedStyle(els.halo);
+    const curScale=getHaloScale();
+    const curBW=parseFloat(cs.borderWidth)||20;
+    const curColor=cs.borderColor;
+    els.halo.style.animation='none';
+    void els.halo.offsetWidth;
+    els.halo.style.transform=`scale(${curScale.toFixed(3)})`;
+    els.halo.style.borderWidth=`${curBW.toFixed(1)}px`;
+    if(curColor)els.halo.style.borderColor=curColor;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      els.halo.style.transition='transform 0.5s cubic-bezier(0.25,1,0.5,1),border-color 0.4s ease,border-width 0.4s ease,opacity 0.3s ease';
+      els.halo.style.transform='scale(1)';
+      els.halo.style.borderWidth='20px';
+      els.halo.style.borderColor='var(--halo-breathing)';
+      els.halo.style.opacity='1';
+      if(!noKeyframe.includes(activeMode))generateKeyframes(config.inhale||4,config.exhale||6);
+    }));
+    if(activeMode==='nadi')els.nadiGraphic.classList.add('visible');
+  }
   els.introPanel.classList.remove('visible');els.settingsPanel.classList.remove('visible');els.modalOverlay.classList.remove('visible');
   els.menuWrapper.classList.add('fade-out');els.visualizerLayer.classList.remove('mode-menu');els.visualizerLayer.classList.add('mode-session');
   setText(els.txtMain,"Start","");setText(els.txtSub,activeMode==='meditation'?"Focus":"Breathing");
@@ -846,6 +910,11 @@ function endSession(){
 }
 
 function skipStep(){
+  if(state.phase===PHASE_REST){
+    if(state.interval){clearInterval(state.interval);state.interval=null;}
+    launchNextFromRest();
+    return;
+  }
   const cp=state.phase;
   if(state.interval){clearInterval(state.interval);state.interval=null;}
   if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
@@ -908,7 +977,7 @@ function startRetentionPhase(){
   requestAnimationFrame(()=>{els.halo.style.transform="scale(0.85)";els.halo.style.borderColor="var(--halo-hold)";els.halo.style.borderWidth="20px";});
   setTimeout(()=>{if(state.phase===PHASE_WIM_RETENTION)els.halo.style.animation="heartbeat 1.5s ease-in-out infinite";},2000);
   setText(els.txtMain,formatTime(state.timerVal),"");els.btnExtend.classList.add('visible');
-  state.interval=setInterval(()=>{
+  startInterval(()=>{
     const p=1-(state.timerVal/state.maxTimerVal);
     const dk=document.body.classList.contains('dark');
     // start: accent blue per mode; end: visible muted tone (not near-black in dark)
@@ -967,7 +1036,7 @@ function startRecoveryPhase(){
 
   applyColor(0);
   let elapsed=0;
-  state.interval=setInterval(()=>{
+  startInterval(()=>{
     rTimer--;elapsed++;
     applyColor(elapsed);
     if(rTimer<0){
@@ -1106,7 +1175,7 @@ function startMeditation(){
   setText(els.topLabel,"MEDITATION","var(--text-muted)");setText(els.txtSub,"Time Left");
   els.halo.style.animation="pulseHoldBig 8s ease-in-out infinite";els.halo.style.borderColor="var(--halo-hold)";els.halo.style.borderWidth="20px";
   let mTimer=config.mDuration*60;setText(els.txtMain,formatTime(mTimer),"");
-  state.interval=setInterval(()=>{mTimer--;setText(els.txtMain,formatTime(mTimer));if(mTimer<=0){clearInterval(state.interval);state.interval=null;playChime();finishRound();}},1000);
+  startInterval(()=>{mTimer--;setText(els.txtMain,formatTime(mTimer));if(mTimer<=0){clearInterval(state.interval);state.interval=null;playChime();finishRound();}});
 }
 
 // ── BHRAMARI ──────────────────────────────────────────────────────
@@ -1337,21 +1406,166 @@ function cycleSitaliText(){
 }
 function sitaliIteration(){if(state.phase!==PHASE_SITALI)return;if(state.breathCount<config.rounds){state.breathCount++;cycleSitaliText();}else finishRound();}
 
+// ── HALO TRANSITION UTILITIES ─────────────────────────────────────
+function getHaloScale(){
+  const m=window.getComputedStyle(els.halo).transform;
+  if(!m||m==='none')return 1;
+  const v=m.match(/matrix\(([^,]+)/);
+  return v?Math.max(0.1,parseFloat(v[1])):1;
+}
+
+// Freeze the halo at its current COMPUTED position (captures both transform and
+// border-width from the live animation), then smoothly transition to a target state.
+function transitionHaloTo({scale=1,borderWidth=20,borderColor='var(--halo-hold)',boxShadow='',duration=0.9,then=null}={}){
+  // Read computed values BEFORE stopping animation — these reflect the live rendered state
+  const cs=window.getComputedStyle(els.halo);
+  const curScale=getHaloScale();
+  const curBW=parseFloat(cs.borderWidth)||20;
+  const curColor=cs.borderColor; // resolved rgb() value
+
+  // Stop animation — element would otherwise snap to non-animated base values
+  els.halo.style.animation='none';
+  void els.halo.offsetWidth; // flush
+
+  // Pin the halo at the exact position it was at visually — no snap possible
+  els.halo.style.transform=`scale(${curScale.toFixed(3)})`;
+  els.halo.style.borderWidth=`${curBW.toFixed(1)}px`;
+  if(curColor&&curColor!=='')els.halo.style.borderColor=curColor;
+
+  // Two rAFs: one to let the browser commit the frozen state, one to start the transition
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    els.halo.style.transition=`transform ${duration}s cubic-bezier(0.25,1,0.5,1),border-color ${(duration*0.8).toFixed(2)}s ease,border-width ${(duration*0.7).toFixed(2)}s ease,box-shadow ${(duration*0.6).toFixed(2)}s ease,opacity ${(duration*0.5).toFixed(2)}s ease`;
+    els.halo.style.transform=`scale(${scale})`;
+    els.halo.style.borderWidth=`${borderWidth}px`;
+    els.halo.style.borderColor=borderColor;
+    els.halo.style.boxShadow=boxShadow;
+    els.halo.style.opacity='1';
+    if(then)setTimeout(then,duration*1000+50);
+  }));
+}
+
 // ── FINISH / STOP ─────────────────────────────────────────────────
 function finishRound(){
   const dur=(Date.now()-sessionStartTime)/60000;recordSession(activeMode,Math.max(0.1,dur));
-  stopAllLogic();resetHaloToIdle();
-  setText(els.topLabel,"COMPLETE","var(--text-muted)");setText(els.txtMain,"Done","");setText(els.txtSub,"");
+
+  // Stop all timers and listeners — but handle halo visuals ourselves
+  const prevPhase=state.phase;
+  state.phase=PHASE_IDLE;
+  if(state.interval){clearInterval(state.interval);state.interval=null;}
+  if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
+  if(state.phaseTimeout){clearTimeout(state.phaseTimeout);state.phaseTimeout=null;}
+  els.halo.removeEventListener('animationiteration',wimHofIteration);
+  els.halo.removeEventListener('animationiteration',bellyIteration);
+  els.halo.removeEventListener('animationiteration',nadiIteration);
+  els.halo.removeEventListener('animationiteration',horseIteration);
+  els.halo.removeEventListener('animationiteration',bhramariIteration);
+  els.halo.removeEventListener('animationiteration',coherentIteration);
+  els.halo.removeEventListener('animationiteration',ujjayiIteration);
+  els.halo.removeEventListener('animationiteration',sitaliIteration);
+  els.boxPath.style.animation='none';
+  els.nadiGraphic.classList.remove('visible','block-left','block-right');
+  els.topWatermark.classList.remove('active');
+
+  setText(els.topLabel,'COMPLETE','var(--text-muted)');
+  setText(els.txtMain,'Done','');setText(els.txtSub,'');
+
   if(isSessionMode){
     sessionQueueIndex++;
-    setTimeout(()=>{
-      if(sessionQueueIndex<sessionQueue.length){setText(els.txtMain,"Next","");setText(els.txtSub,intros[sessionQueue[sessionQueueIndex].mode].title);setTimeout(()=>runNextInQueue(),2000);}
-      else{isSessionMode=false;updateSeqIndicator(false);setTimeout(endSession,2000);}
-    },500);
-  } else setTimeout(endSession,2000);
+    if(sessionQueueIndex<sessionQueue.length){
+      // Smooth transition into rest — halo flows to scale(1) hold colour
+      transitionHaloTo({scale:1,borderWidth:20,borderColor:'var(--halo-hold)',duration:0.8,then:startRestTimer});
+    } else {
+      transitionHaloTo({scale:1,borderWidth:20,borderColor:'var(--halo-hold)',duration:0.8});
+      isSessionMode=false;updateSeqIndicator(false);
+      setTimeout(endSession,2000);
+    }
+  } else {
+    transitionHaloTo({scale:1,borderWidth:20,borderColor:'var(--halo-hold)',duration:0.8});
+    setTimeout(endSession,2000);
+  }
 }
+
+function startRestTimer(){
+  state.phase=PHASE_REST;
+  const nextTitle=intros[sessionQueue[sessionQueueIndex].mode].title;
+  const REST_DURATION=10;
+  let t=REST_DURATION;
+
+  // Halo arrived at scale(1) via transitionHaloTo. restPulse also starts at scale(1),
+  // so the animation takes over with zero jump.
+  els.halo.style.transition='none';
+  void els.halo.offsetWidth;
+  els.halo.style.animation='restPulse 3.5s ease-in-out infinite';
+
+  setText(els.topLabel,'REST','var(--text-muted)');
+  setText(els.txtSub,`Up next: ${nextTitle}`);
+  setText(els.txtMain,`${t}`,'var(--halo-hold)');
+  els.topLabel.classList.add('active');
+  els.controls.classList.add('active');
+  updateSeqIndicator(true);
+
+  state.interval=setInterval(()=>{
+    t--;
+    setText(els.txtMain,`${Math.max(0,t)}`,'var(--halo-hold)');
+    if(t<=0){clearInterval(state.interval);state.interval=null;launchNextFromRest();}
+  },1000);
+}
+
+function launchNextFromRest(){
+  // Freeze halo from the idle pulse, transition toward scale(1) breathing colour,
+  // then hand off to runNextInQueue which will call launchMode.
+  transitionHaloTo({scale:1,borderWidth:20,borderColor:'var(--halo-breathing)',duration:0.55,then:runNextInQueue});
+}
+
+function togglePause(){if(state.paused)resumeSession();else pauseSession();}
+
+function pauseSession(){
+  if(state.paused||state.phase===PHASE_IDLE||state.phase===PHASE_REST)return;
+  state.paused=true;
+  // Freeze CSS animation at its current visual position
+  els.halo.style.animationPlayState='paused';
+  // Stop all timers — intervalCb is preserved so resume can restart it
+  if(state.interval){clearInterval(state.interval);state.interval=null;}
+  if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
+  if(state.phaseTimeout){clearTimeout(state.phaseTimeout);state.phaseTimeout=null;}
+  setText(els.topLabel,'PAUSED','var(--text-muted)');
+  const btn=document.getElementById('btnPause');
+  if(btn){btn.innerHTML='&#9654;&#xFE0E;';btn.title='Resume';}
+}
+
+function resumeSession(){
+  if(!state.paused)return;
+  state.paused=false;
+  els.halo.style.animationPlayState='running';
+  els.topLabel.classList.add('active');
+  const btn=document.getElementById('btnPause');
+  if(btn){btn.innerHTML='&#9646;&#9646;';btn.title='Pause';}
+  const ph=state.phase;
+  // Countdown interval techniques: restart with saved callback (closure retains timer value)
+  if(state.intervalCb&&(ph===PHASE_WIM_RETENTION||ph===PHASE_WIM_RECOVERY||ph===PHASE_MEDITATION)){
+    state.interval=setInterval(state.intervalCb,1000);return;
+  }
+  // Animation-iteration techniques: animation already resumed, just restart text cue
+  if(ph===PHASE_WIM_BREATHING)cycleWimHofText();
+  else if(ph===PHASE_ACTIVE){if(activeMode==='belly')cycleBellyText();else if(activeMode==='horse')cycleHorseText();}
+  else if(ph===PHASE_NADI)cycleNadiText();
+  else if(ph===PHASE_BHRAMARI)cycleBhramariText();
+  else if(ph===PHASE_COHERENT)cycleCoherentText();
+  else if(ph===PHASE_UJJAYI)cycleUjjayiText();
+  else if(ph===PHASE_SITALI)cycleSitaliText();
+  // Timeout-chain and pump techniques: restart current cycle (round count preserved)
+  else if(ph===PHASE_578)runFiveSevenEightCycle();
+  else if(ph===PHASE_TACTICAL)runTacticalCycle();
+  else if(ph===PHASE_SIGH)runSighCycle();
+  else if(ph===PHASE_KAPAL)runKapalSet();
+  else if(ph===PHASE_BHASTRIKA)runBhastrikaSet();
+}
+
 function stopAllLogic(){
-  state.phase=PHASE_IDLE;
+  state.phase=PHASE_IDLE;state.paused=false;state.intervalCb=null;
+  els.halo.style.animationPlayState='running';
+  const btn=document.getElementById('btnPause');
+  if(btn){btn.innerHTML='&#9646;&#9646;';btn.title='Pause';}
   if(state.interval){clearInterval(state.interval);state.interval=null;}
   if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
   if(state.phaseTimeout){clearTimeout(state.phaseTimeout);state.phaseTimeout=null;}
