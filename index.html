@@ -3,600 +3,881 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wim Hof: Halo HUD v5 - Smooth Flow</title>
+    <title>O2 Flow</title>
     <style>
         /* --- Palette & Design --- */
         :root {
-            --bg-radial: radial-gradient(circle at center, #0F3D3E 0%, #020c12 100%);
-            
-            --text-white: #E0FBFC;
-            --text-cyan: #00F2FF;
-            --text-muted: #2d4650; 
-            
-            /* --- HALO COLORS --- */
-            --halo-gold-border: #FFD700;
-            --halo-gold-glow: rgba(255, 215, 0, 0.6);
-
-            --halo-grey-border: #546e7a;
-            --halo-grey-glow: rgba(84, 110, 122, 0.4);
-            
-            --halo-red-border: #d32f2f;
-            --halo-red-glow: rgba(211, 47, 47, 0.8);
-
-            --halo-blue-border: #00F2FF;
-            --halo-blue-glow: rgba(0, 242, 255, 0.7);
+            --bg-color: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-main: #131313;
+            --text-muted: #8492a6;
+            --text-sub: #323232;
+            --accent-blue: #3474F0;
+            --halo-breathing: #3474F0; 
+            --halo-hold: #5e6b7c;
+            --halo-recover: #3474F0;
+            --ring-size: 140px;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background: var(--bg-radial);
-            color: var(--text-white);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: var(--bg-color);
+            color: var(--text-main);
             min-height: 100vh;
             overflow: hidden;
             position: relative;
         }
 
-        /* --- UI Elements --- */
-        h1 {
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(to right, #00F2FF, #ffffff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-            text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
-        }
-
-        .subtitle {
-            color: #537985;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
-        /* Settings Panel */
-        .glass-panel {
-            background: rgba(8, 18, 28, 0.75);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            transition: opacity 0.4s ease;
-            position: relative;
-            z-index: 10;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .phase-desc {
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: left;
-            border-left: 3px solid var(--text-cyan);
-        }
-        .phase-desc h3 { font-size: 0.85rem; color: var(--text-cyan); margin-bottom: 5px; text-transform: uppercase; }
-        .phase-desc p { font-size: 0.75rem; color: #ccc; line-height: 1.4; margin-bottom: 8px; }
-
-        .input-row { display: flex; gap: 15px; margin-bottom: 15px; }
-        .input-group { flex: 1; text-align: left; margin-bottom: 15px; }
-
-        label { display: block; font-size: 0.75rem; color: var(--text-cyan); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        input { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #1C3E4F; border-radius: 8px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--text-cyan); }
-
-        .btn {
-            background: linear-gradient(135deg, #00C6FF, #0072FF);
-            color: white; border: none; padding: 15px; width: 100%; border-radius: 50px;
-            font-size: 1rem; font-weight: 600; letter-spacing: 1px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3); transition: transform 0.2s;
-        }
-        .btn:hover { transform: translateY(-2px); }
-
-        .footer-credit { position: fixed; bottom: 15px; width: 100%; text-align: center; color: #445566; font-size: 0.75rem; pointer-events: none; z-index: 5; }
-
-        /* --- Visualizer View --- */
-        .visualizer {
-            display: none;
-            flex-direction: column;
+        /* --- VISUALIZER LAYER --- */
+        .visualizer-layer {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 100vh; 
-            position: relative;
+            z-index: 5;
+            pointer-events: none;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .visualizer-layer.mode-menu {
+            top: 20%;
+            transform: translateY(-50%) scale(0.85);
+        }
+        
+        .visualizer-layer.mode-session {
+            top: 50%;
+            transform: translateY(-50%) scale(1);
         }
 
-        /* --- THE HALO SYSTEM --- */
         .halo-wrapper {
             position: relative;
-            width: 300px; 
-            height: 300px;
+            width: var(--ring-size); 
+            height: var(--ring-size);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            margin-top: 50px; 
         }
 
-        /* TOP LABEL CONTAINER */
-        .top-label {
+        .halo-ring {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: transparent;
+            border: 20px solid var(--accent-blue);
+            position: absolute; 
+            z-index: 1;
+            transition: all 0.5s ease-out, opacity 0.5s ease;
+            will-change: transform, border-color, border-width;
+            box-shadow: 0 10px 40px rgba(52, 116, 240, 0.25);
+            opacity: 1;
+        }
+
+        .visualizer-layer.mode-menu .halo-ring {
+            opacity: 1 !important; 
+            box-shadow: 0 15px 45px rgba(52, 116, 240, 0.15); 
+            border-width: 25px; 
+        }
+        .visualizer-layer.mode-menu .hud-main {
+            font-size: 16rem; 
+            font-weight: 800; 
+            letter-spacing: -2px;
+            transform: translateX(110px) translateY(20px); 
+        }
+        .visualizer-layer.mode-menu .hud-sub {
+            font-size: 1.6rem;
+            letter-spacing: 5px;
+            font-weight: 700;
+            margin-top: 60px; 
+            margin-left: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .visualizer-layer.mode-menu .hud-main { font-size: 11rem; transform: translateX(80px) translateY(15px); }
+            .visualizer-layer.mode-menu .halo-ring { border-width: 20px; }
+        }
+
+        .box-path {
             position: absolute;
-            /* MOVED DOWN: Was -190px, now -135px to get closer to halo */
-            top: -135px; 
-            width: 340px; 
-            display: flex;
-            justify-content: center;
-            gap: 40px; /* Increased gap slightly for balance */
+            width: 150px;
+            height: 150px;
+            border: 4px solid #EAEAEA;
+            border-radius: 8px; 
+            z-index: 1;
+            opacity: 0;
             pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .box-path.active { opacity: 1; }
+
+        .box-dot {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            left: 0%; 
+            top: 100%; 
+            box-shadow: 0 0 12px var(--accent-blue);
+            z-index: 2;
+        }
+
+        .nadi-graphic {
+            position: absolute;
+            top: 15px; 
+            width: 55px; 
+            height: 65px;
+            z-index: 10;
             opacity: 0;
             transition: opacity 0.5s ease;
-            z-index: 5; /* Ensure it stays above halo if they overlap */
+        }
+        .nadi-graphic.visible { opacity: 1; }
+        .nose-line { fill: none; stroke: var(--text-muted); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .finger { fill: #EAEAEA; transition: fill 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .nadi-graphic.block-left #fingerLeft { fill: var(--accent-blue); transform: translateX(6px); }
+        .nadi-graphic.block-right #fingerRight { fill: var(--accent-blue); transform: translateX(-6px); }
+
+        .menu-wrapper {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 65vh; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            overflow-y: auto; 
+            padding-bottom: 40px;
+            mask-image: linear-gradient(to top, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to top, black 90%, transparent 100%);
+        }
+        .menu-wrapper.fade-out {
+            opacity: 0;
+            transform: translateY(40px);
+            pointer-events: none;
+        }
+
+        .menu-title {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 900px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+            position: relative;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
+        
+        .menu-card.clicked {
+            transform: scale(1.05);
+            box-shadow: 0 25px 60px rgba(52, 116, 240, 0.2);
+            z-index: 15;
+        }
+        
+        .menu-card-img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            background: #eef1f6;
+        }
+
+        .menu-card-content {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .menu-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+        .menu-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        @media (max-width: 600px) {
+            .menu-grid { grid-template-columns: 1fr; gap: 15px; }
+            .menu-card-img { height: 110px; }
+            .menu-card-content { padding: 15px; }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(245, 247, 250, 0.85);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 15;
+        }
+        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, 40px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+            max-width: 90%;
+            width: 100%;
+        }
+        .modal-card.visible {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .intro-layout { display: flex; max-width: 750px; overflow: hidden; }
+        .intro-left { flex: 1; background: #f4f6f9; }
+        .intro-left img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .intro-right { flex: 1.2; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+
+        @media (max-width: 700px) {
+            .intro-layout { flex-direction: column; }
+            .intro-left img { height: 200px; }
+            .intro-right { padding: 25px; }
+        }
+
+        .settings-layout { max-width: 400px; padding: 30px; text-align: center; }
+        h2 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+        .intro-desc { font-size: 0.95rem; color: var(--text-main); line-height: 1.5; margin-bottom: 25px; }
+        
+        .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .input-group { flex: 1; text-align: left; }
+        label { display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
+        input { width: 100%; padding: 12px; background: #FAFAFA; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 1rem; font-weight: 600; outline: none; text-align: center; transition: 0.2s; }
+        input:focus { border-color: var(--accent-blue); background: #FFF; }
+
+        .button-row { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-primary, .btn-secondary { flex: 1; padding: 16px; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.1s; border: none; text-align: center; }
+        .btn-primary { background: var(--accent-blue); color: white; box-shadow: 0 8px 20px rgba(52, 116, 240, 0.2); }
+        .btn-secondary { background: #EAEAEA; color: var(--text-sub); }
+        .btn-primary:active, .btn-secondary:active { transform: scale(0.98); }
+
+        .btn-back { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-top: 20px; cursor: pointer; letter-spacing: 1px; align-self: flex-start; }
+        .btn-back:hover { color: var(--text-main); }
+        .btn-full { width: 100%; margin-top: 5px; }
+
+        .center-hud { position: absolute; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; transition: transform 0.3s; }
+        .hud-main { font-size: 1.8rem; font-weight: 500; color: var(--accent-blue); line-height: 1; white-space: nowrap; transition: color 0.3s, font-size 0.5s ease, font-weight 0.5s ease, transform 0.5s ease; }
+        .hud-main sub { font-size: 0.6em; vertical-align: sub; margin-left: 1px; }
+        .hud-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; transition: font-size 0.5s ease; }
+
+        .top-watermark {
+            position: absolute;
+            top: -125px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(132, 146, 166, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .top-watermark.active { opacity: 1; }
+
+        .top-label { 
+            position: absolute; 
+            top: -100px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px; 
+            text-align: center; 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            color: var(--text-muted); 
+            opacity: 0; 
+            transition: opacity 0.1s ease, color 0.3s ease; 
+            z-index: 2;
         }
         .top-label.active { opacity: 1; }
 
-        /* Individual Breath Words (Inhale/Exhale) */
-        .breath-word {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            
-            /* Start very dim/transparent */
-            color: var(--text-white);
-            opacity: 0.2; 
-            text-shadow: none;
-            transform: scale(0.9);
-            
-            /* Slower transition for "Liquid" feel (switched from 1.0s to 1.2s ease-in-out) */
-            transition: opacity 1.2s ease-in-out, 
-                        color 1.2s ease-in-out, 
-                        text-shadow 1.2s ease-in-out,
-                        transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Active State: Glows White/Cyan and Scales up */
-        /* Note: Removed gradient background-clip because it causes "snapping" */
-        .breath-word.highlight {
-            color: #ffffff;
-            opacity: 1;
-            text-shadow: 0 0 15px rgba(0, 242, 255, 0.8), 0 0 30px rgba(0, 242, 255, 0.4);
-            transform: scale(1.15); /* Gentle swell */
-        }
-
-        /* Simple Label Mode (For HOLD / RECOVERY phases) */
-        .simple-label {
-            width: 100%;
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: var(--text-cyan);
-            text-shadow: 0 0 25px rgba(0, 242, 255, 0.4);
-        }
-
-        /* RING */
-        .halo-ring {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: transparent;
-            border: 25px solid var(--halo-gold-border);
-            box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow);
-            transform: scale(1);
-            position: absolute; 
-            z-index: 1;
-            transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s ease-out;
-            will-change: transform, border-color, box-shadow;
-        }
-
-        /* RED OVERLAY */
-        .halo-ring::after {
-            content: '';
-            position: absolute;
-            top: -25px; left: -25px; right: -25px; bottom: -25px; 
-            border-radius: 50%;
-            border: 25px solid var(--halo-red-border);
-            box-shadow: 0 0 50px var(--halo-red-glow), inset 0 0 50px var(--halo-red-glow);
-            opacity: 0; 
-            z-index: 2;
-            pointer-events: none;
-            mix-blend-mode: lighten;
-        }
-
-        /* --- CENTER HUD TEXT --- */
-        .center-hud {
-            position: absolute;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            text-align: center;
-            width: 180px; 
-        }
-
-        .hud-main {
-            font-size: 2.2rem; 
-            font-weight: 700;
-            color: var(--text-white);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            line-height: 1.2;
-            margin-bottom: 0;
-        }
-
-        .hud-sub {
-            font-size: 0.9rem;
-            color: var(--text-cyan);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
-            height: 1.2em;
-        }
-
-        /* --- Controls --- */
-        .controls {
-            margin-top: 100px; 
-            display: flex;
-            gap: 15px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-            z-index: 20;
-        }
+        .controls { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 20; }
         .controls.active { opacity: 1; pointer-events: all; }
-
-        .btn-sm {
-            padding: 10px 25px;
-            border-radius: 20px;
-            border: 1px solid #537985;
-            background: rgba(0,0,0,0.5);
-            color: var(--text-white);
-            cursor: pointer;
-            transition: 0.2s;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-        }
-        .btn-sm:hover { background: #537985; color: #000; }
-        .btn-red { border-color: #ff5555; color: #ff5555; }
-        .btn-red:hover { background: #ff5555; color: white; }
-
-        /* Extend Button */
-        .btn-extend {
-            position: absolute;
-            right: -20px; 
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid #777;
-            color: #ccc;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0; 
-            pointer-events: none;
-            transition: all 0.2s;
-            z-index: 15;
-        }
-        .btn-extend:hover { background: #aaa; color: #000; border-color: #aaa; }
+        .btn-sm { padding: 10px 25px; border-radius: 30px; border: none; background: #E6E6E6; color: var(--text-sub); cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+        .btn-sm:hover { background: #dcdcdc; }
+        .btn-red { background: #FFEBEE; color: #D32F2F; }
+        
+        .btn-extend { position: absolute; right: -50px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid #eee; color: var(--text-muted); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .btn-extend.visible { opacity: 1; pointer-events: all; }
-
-        /* Utility */
-        .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.8s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-extend:hover { color: var(--accent-blue); border-color: var(--accent-blue); }
 
         /* Animations */
         @keyframes heartbeat {
-            0% { transform: scale(0.85); box-shadow: 0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow); }
-            50% { transform: scale(0.88); box-shadow: 0 0 35px var(--halo-grey-glow), inset 0 0 35px var(--halo-grey-glow); }
-            100% { transform: scale(0.85); box-shadow: 0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow); }
+            0% { transform: scale(0.85); }
+            10% { transform: scale(0.87); }
+            20% { transform: scale(0.85); }
+            100% { transform: scale(0.85); }
+        }
+        
+        @keyframes heartbeatBlueBig {
+            0% { transform: scale(1.8); box-shadow: 0 10px 30px rgba(52, 116, 240, 0.2); border-width: 10px; }
+            50% { transform: scale(2.1); box-shadow: 0 25px 70px rgba(52, 116, 240, 0.8); border-width: 2px; }
+            100% { transform: scale(1.8); box-shadow: 0 10px 30px rgba(52, 116, 240, 0.2); border-width: 10px; }
         }
 
-        /* Recovery Heartbeat (Blue) - EXPANDED SIZE */
-        @keyframes heartbeatBlueExpanded {
-            /* Pulse around scale 2.2 (Full Size) */
-            0% { transform: scale(2.2); box-shadow: 0 0 40px var(--halo-blue-glow), inset 0 0 40px var(--halo-blue-glow); }
-            50% { transform: scale(2.25); box-shadow: 0 0 70px var(--halo-blue-glow), inset 0 0 60px var(--halo-blue-glow); }
-            100% { transform: scale(2.2); box-shadow: 0 0 40px var(--halo-blue-glow), inset 0 0 40px var(--halo-blue-glow); }
+        @keyframes pulseHoldBig {
+            0% { transform: scale(1.8); }
+            10% { transform: scale(1.83); }
+            20% { transform: scale(1.8); }
+            100% { transform: scale(1.8); }
+        }
+
+        @keyframes pulseHoldBox {
+            0% { transform: scale(1); }
+            10% { transform: scale(0.96); }
+            20% { transform: scale(1); }
+            100% { transform: scale(1); }
         }
 
         #dynamicStyles { display: none; }
     </style>
 </head>
 <body>
-
     <style id="dynamicStyles"></style>
+    <div class="modal-overlay" id="modalOverlay"></div>
 
-    <div class="glass-panel text-center" id="settingsPanel">
-        <div style="text-align: center;">
-            <h1>Halo Flow</h1>
-            <p class="subtitle">Wim Hof Method</p>
-        </div>
-
-        <div class="phase-desc">
-            <h3>1. Deep Breathing</h3>
-            <p>Halo expands (Inhale) & contracts (Exhale).</p>
-            <h3>2. Retention</h3>
-            <p>Halo turns grey. Hold until urge to breathe.</p>
-            <h3>3. Recovery</h3>
-            <p>Halo turns blue. Inhale and hold for 15s.</p>
-        </div>
-
-        <div class="input-group">
-            <label>Number of Breaths</label>
-            <input type="number" id="nbBreaths" value="30">
-        </div>
-        <div class="input-row">
-            <div class="input-group">
-                <label>Inhale (sec)</label>
-                <input type="number" id="tInhale" value="1.8" step="0.1">
-            </div>
-            <div class="input-group">
-                <label>Exhale (sec)</label>
-                <input type="number" id="tExhale" value="1.8" step="0.1">
-            </div>
-        </div>
-        <div class="input-row">
-            <div class="input-group">
-                <label>Retention (sec)</label>
-                <input type="number" id="tHold" value="60">
-            </div>
-            <div class="input-group">
-                <label>Recovery (sec)</label>
-                <input type="number" id="tRecover" value="15">
-            </div>
-        </div>
-
-        <button class="btn" onclick="toVisualizer()">Go to Session</button>
-        
-        <div style="margin-top:20px; text-align:left; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-            <label style="color:#666;">Previous Holds:</label>
-            <div id="historyLog" style="color:#aaa; font-size:0.85rem; max-height:80px; overflow-y:auto;"></div>
-        </div>
-    </div>
-
-    <div class="footer-credit">Designed by Astor Knudsen</div>
-
-    <div class="visualizer" id="visualizerPanel">
-        <div class="halo-wrapper" id="haloWrapper" onclick="handleTap()">
-            
-            <div id="topLabel" class="top-label">
-            </div>
-
+    <div class="visualizer-layer mode-menu" id="visualizerLayer">
+        <div class="halo-wrapper" id="haloWrapper">
+            <div id="topWatermark" class="top-watermark"></div>
+            <div id="topLabel" class="top-label">INHALE</div>
             <div class="halo-ring" id="haloRing"></div>
             
-            <div class="center-hud">
-                <div class="hud-main" id="txtMain">START</div>
-                <div class="hud-sub" id="txtSub">Tap Ring</div>
+            <div class="box-path" id="boxPath">
+                <div class="box-dot" id="boxDot"></div>
+            </div>
+
+            <svg id="nadiGraphic" class="nadi-graphic" viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg">
+                <path class="nose-line" d="M 21,12 C 18,25 9,30 9,42 C 9,50 17,52 21,46 C 19,44 15,44 14,47" />
+                <path class="nose-line" d="M 29,12 C 32,25 41,30 41,42 C 41,50 33,52 29,46 C 31,44 35,44 36,47" />
+                <path class="nose-line" d="M 19,48 C 22,53 28,53 31,48" />
+                <rect id="fingerLeft" class="finger" x="0" y="38" width="9" height="15" rx="4.5" />
+                <rect id="fingerRight" class="finger" x="41" y="38" width="9" height="15" rx="4.5" />
+            </svg>
+            
+            <div class="center-hud" id="centerHud">
+                <div class="hud-main" id="txtMain"><sub>2</sub></div>
+                <div class="hud-sub" id="txtSub">FLOW</div>
             </div>
 
             <button class="btn-extend" id="btnExtend" onclick="extendTimer(event)">+15</button>
         </div>
+    </div>
 
-        <div class="controls" id="controls">
-            <button class="btn-sm btn-red" onclick="endSession()">End</button>
-            <button class="btn-sm" onclick="skipStep()">Skip</button>
+    <div class="menu-wrapper" id="menuWrapper">
+        <div class="menu-title">Select Technique</div>
+        <div class="menu-grid" id="menuGrid"></div>
+    </div>
+
+    <div class="modal-card intro-layout" id="introPanel">
+        <div class="intro-left">
+            <img id="introImage" src="" alt="Technique Illustration">
+        </div>
+        <div class="intro-right">
+            <h2 id="introTitle">How to perform</h2>
+            <div class="intro-desc" id="introDesc"></div>
+            
+            <div id="wimHofQuickConfig" style="display: none; margin-bottom: 20px;">
+                <div class="input-row" style="margin-bottom: 0;">
+                    <div class="input-group">
+                        <label>Rounds</label>
+                        <input type="number" id="qWimRounds" value="3" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Retention (s)</label>
+                        <input type="number" id="qWimHold" value="90" min="10">
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button class="btn-primary" onclick="startSession()">Begin</button>
+                <button class="btn-secondary" onclick="goToSettings()">Customize</button>
+            </div>
+            <button class="btn-back" onclick="backToMenuFromIntro()">← Back to menu</button>
         </div>
     </div>
 
-    <script>
-        const PHASE_IDLE = 'idle';
-        const PHASE_BREATHING = 'breathing';
-        const PHASE_RETENTION = 'retention';
-        const PHASE_RECOVERY = 'recovery';
+    <div class="modal-card settings-layout" id="settingsPanel">
+        <h2 id="settingsTitle">Configuration</h2>
+        
+        <div id="wimHofSettings" style="display:none;">
+            <div class="input-row">
+                <div class="input-group"><label>Total Rounds</label><input type="number" id="wTotalRounds" value="3" min="1"></div>
+                <div class="input-group"><label>Breaths</label><input type="number" id="wNbBreaths" value="30" min="1"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Inhale (s)</label><input type="number" id="wInhale" value="1.8" step="0.1"></div>
+                <div class="input-group"><label>Exhale (s)</label><input type="number" id="wExhale" value="1.8" step="0.1"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Retention (s)</label><input type="number" id="wHold" value="90"></div>
+                <div class="input-group"><label>Recover (s)</label><input type="number" id="wRecover" value="15"></div>
+            </div>
+        </div>
 
-        let config = {};
-        let state = {
-            phase: PHASE_IDLE,
-            breathCount: 0,
-            timerVal: 0,
-            interval: null,
-            textTimeout: null,
-            history: []
+        <div id="boxSettings" style="display:none;">
+            <div class="input-group" style="margin-bottom:15px;">
+                <label>Total Rounds</label>
+                <input type="number" id="bNbRounds" value="10">
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Inhale (s)</label><input type="number" id="bInhale" value="4"></div>
+                <div class="input-group"><label>Top Hold (s)</label><input type="number" id="bHoldTop" value="4"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Exhale (s)</label><input type="number" id="bExhale" value="4"></div>
+                <div class="input-group"><label>Bottom Hold (s)</label><input type="number" id="bHoldBottom" value="4"></div>
+            </div>
+        </div>
+
+        <div id="fiveSevenEightSettings" style="display:none;">
+            <div class="input-group" style="margin-bottom:15px;">
+                <label>Total Rounds</label>
+                <input type="number" id="fNbRounds" value="4">
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Inhale (s)</label><input type="number" id="fInhale" value="5"></div>
+                <div class="input-group"><label>Hold (s)</label><input type="number" id="fHold" value="7"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Exhale (s)</label><input type="number" id="fExhale" value="8"></div>
+            </div>
+        </div>
+
+        <div id="basicSettings" style="display:none;">
+            <div class="input-group" style="margin-bottom:15px;">
+                <label>Total Rounds</label>
+                <input type="number" id="cNbRounds" value="15">
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Inhale (s)</label><input type="number" id="cInhale" value="4" step="0.5"></div>
+                <div class="input-group"><label>Exhale (s)</label><input type="number" id="cExhale" value="6" step="0.5"></div>
+            </div>
+        </div>
+
+        <div id="meditationSettings" style="display:none;">
+            <div class="input-group" style="margin-bottom:15px;">
+                <label>Duration (Minutes)</label>
+                <input type="number" id="mDuration" value="10" min="1">
+            </div>
+        </div>
+
+        <button class="btn-primary btn-full" onclick="startSession()">Save & Start</button>
+        <button class="btn-back" onclick="backToMenuFromSettings()">← Back</button>
+    </div>
+
+    <div class="controls" id="controls">
+        <button class="btn-sm btn-red" onclick="endSession()">Stop</button>
+        <button class="btn-sm" onclick="skipStep()">Skip</button>
+    </div>
+
+    <script>
+        const intros = {
+            wimhof: { title: "Wim Hof", desc: "Deep cyclical breathing followed by an extended retention phase to reset the nervous system.", img: "Gemini_Generated_Image_czxzw5czxzw5czxz.png" },
+            box: { title: "Box Breathing", desc: "Four equal phases of breathing and holding to intensely focus the mind and calm nerves.", img: "Gemini_Generated_Image_.png" },
+            belly: { title: "Diaphragmatic", desc: "Focuses on using the diaphragm to lower heart rate and reduce blood pressure.", img: "Gemini_Generated_Image_(2).png" },
+            nadi: { title: "Alternate Nostril", desc: "A yogic technique alternating which nostril you breathe through to enhance balance.", img: "Gemini_Generated_Image_(1).png" },
+            fiveseveneight: { title: "5-7-8 Breathing", desc: "A powerful technique to relax the mind, slow the heart rate, and prepare for sleep.", img: "Gemini_Generated_Image_6drz746drz746drz.png" },
+            horse: { title: "Horse Stance", desc: "Deep, grounded breathing rooted in martial arts to build physical and mental resilience.", img: "Gemini_Generated_Image_8yrknp8yrknp8yrk.png" },
+            meditation: { title: "Meditation", desc: "A simple, unguided timer with a gentle chime to track silent mindfulness or meditation.", img: "Gemini_Generated_Image_placeholder_meditation.png" }
         };
 
+        const PHASE_IDLE = 'idle', PHASE_ACTIVE = 'active', PHASE_WIM_BREATHING = 'w_breathing', PHASE_WIM_RETENTION = 'w_retention', PHASE_WIM_RECOVERY = 'w_recovery', PHASE_NADI = 'nadi_active', PHASE_578 = '578_active', PHASE_MEDITATION = 'meditation';
+
+        let config = {}, activeMode = 'wimhof', state = { phase: PHASE_IDLE, breathCount: 0, wimCurrentRound: 1, nadiStep: 0, timerVal: 0, maxTimerVal: 0, interval: null, textTimeout: null, phaseTimeout: null };
+
+        // Audio Context setup for the chime
+        let audioCtx;
+
+        function playChime() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(432, audioCtx.currentTime); // Healing frequency
+            
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(436, audioCtx.currentTime); // Slight detune for bell effect
+
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + 0.05); // Attack
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3); // Long release
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc1.start();
+            osc2.start();
+            osc1.stop(audioCtx.currentTime + 3);
+            osc2.stop(audioCtx.currentTime + 3);
+        }
+
         const els = {
-            settings: document.getElementById('settingsPanel'),
-            visualizer: document.getElementById('visualizerPanel'),
+            visualizerLayer: document.getElementById('visualizerLayer'),
+            menuWrapper: document.getElementById('menuWrapper'),
+            menuGrid: document.getElementById('menuGrid'),
+            modalOverlay: document.getElementById('modalOverlay'),
+            introPanel: document.getElementById('introPanel'),
+            settingsPanel: document.getElementById('settingsPanel'),
+            wimHofSettings: document.getElementById('wimHofSettings'),
+            boxSettings: document.getElementById('boxSettings'),
+            fiveSevenEightSettings: document.getElementById('fiveSevenEightSettings'),
+            basicSettings: document.getElementById('basicSettings'),
+            meditationSettings: document.getElementById('meditationSettings'),
+            introTitle: document.getElementById('introTitle'),
+            introDesc: document.getElementById('introDesc'),
+            introImage: document.getElementById('introImage'),
+            settingsTitle: document.getElementById('settingsTitle'),
             halo: document.getElementById('haloRing'),
+            boxPath: document.getElementById('boxPath'),
+            boxDot: document.getElementById('boxDot'),
+            nadiGraphic: document.getElementById('nadiGraphic'),
+            centerHud: document.getElementById('centerHud'),
             txtMain: document.getElementById('txtMain'),
             txtSub: document.getElementById('txtSub'),
             topLabel: document.getElementById('topLabel'),
+            topWatermark: document.getElementById('topWatermark'),
             controls: document.getElementById('controls'),
             btnExtend: document.getElementById('btnExtend'),
-            styleSheet: document.getElementById('dynamicStyles'),
-            historyLog: document.getElementById('historyLog')
+            styleSheet: document.getElementById('dynamicStyles')
         };
 
-        // --- Navigation ---
-        function toVisualizer() {
-            config.breaths = parseInt(document.getElementById('nbBreaths').value);
-            config.inhale = parseFloat(document.getElementById('tInhale').value);
-            config.exhale = parseFloat(document.getElementById('tExhale').value);
-            config.hold = parseInt(document.getElementById('tHold').value);
-            config.recover = parseInt(document.getElementById('tRecover').value);
+        function renderMenu() {
+            els.menuGrid.innerHTML = '';
+            for (const [mode, data] of Object.entries(intros)) {
+                const card = document.createElement('div');
+                card.className = 'menu-card';
+                card.onclick = () => handleCardClick(card, mode);
+                card.innerHTML = `
+                    <img class="menu-card-img" src="${data.img}" alt="${data.title}">
+                    <div class="menu-card-content">
+                        <h3>${data.title}</h3>
+                        <p>${data.desc}</p>
+                    </div>
+                `;
+                els.menuGrid.appendChild(card);
+            }
+        }
 
-            generateKeyframes(config.inhale, config.exhale);
-            els.settings.classList.add('hidden');
-            els.visualizer.style.display = 'flex';
-            els.visualizer.classList.add('fade-in');
-            resetToIdle();
+        function handleCardClick(cardElement, mode) {
+            cardElement.classList.add('clicked');
+            setTimeout(() => {
+                cardElement.classList.remove('clicked');
+                openIntro(mode);
+            }, 250);
+        }
+
+        renderMenu();
+
+        document.getElementById('qWimRounds').addEventListener('input', e => document.getElementById('wTotalRounds').value = e.target.value);
+        document.getElementById('wTotalRounds').addEventListener('input', e => document.getElementById('qWimRounds').value = e.target.value);
+        document.getElementById('qWimHold').addEventListener('input', e => document.getElementById('wHold').value = e.target.value);
+        document.getElementById('wHold').addEventListener('input', e => document.getElementById('qWimHold').value = e.target.value);
+
+        function setText(el, val, color) {
+            let current = el.innerHTML.trim(), next = String(val).trim();
+            if (current === next) { 
+                if (color !== undefined) el.style.color = color; 
+                return; 
+            }
+            el.innerHTML = next;
+            if (color !== undefined) el.style.color = color;
+        }
+
+        function openIntro(mode) {
+            activeMode = mode;
+            els.introTitle.innerText = intros[mode].title;
+            els.introDesc.innerText = intros[mode].desc;
+            if (intros[mode].img) els.introImage.src = intros[mode].img;
+            document.getElementById('wimHofQuickConfig').style.display = mode === 'wimhof' ? 'block' : 'none';
+            els.modalOverlay.classList.add('visible');
+            els.menuWrapper.classList.add('fade-out');
+            setTimeout(() => els.introPanel.classList.add('visible'), 100);
+        }
+
+        function backToMenuFromIntro() {
+            els.introPanel.classList.remove('visible');
+            setTimeout(() => {
+                els.modalOverlay.classList.remove('visible');
+                els.menuWrapper.classList.remove('fade-out');
+            }, 300);
+        }
+
+        function goToSettings() {
+            els.introPanel.classList.remove('visible');
+            els.wimHofSettings.style.display = 'none';
+            els.boxSettings.style.display = 'none';
+            els.fiveSevenEightSettings.style.display = 'none';
+            els.basicSettings.style.display = 'none';
+            els.meditationSettings.style.display = 'none';
+
+            if(activeMode === 'wimhof') els.wimHofSettings.style.display = 'block';
+            else if (activeMode === 'box') els.boxSettings.style.display = 'block';
+            else if (activeMode === 'fiveseveneight') els.fiveSevenEightSettings.style.display = 'block';
+            else if (activeMode === 'meditation') els.meditationSettings.style.display = 'block';
+            else els.basicSettings.style.display = 'block';
+            
+            els.settingsTitle.innerText = intros[activeMode].title + " Config";
+            setTimeout(() => els.settingsPanel.classList.add('visible'), 300); 
+        }
+
+        function backToMenuFromSettings() {
+            els.settingsPanel.classList.remove('visible');
+            setTimeout(() => els.introPanel.classList.add('visible'), 300);
+        }
+
+        function startSession() {
+            // Unlock audio context on initial button click interaction to prevent browser blocking
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if(activeMode === 'wimhof') {
+                config.wimTotalRounds = parseInt(document.getElementById('wTotalRounds').value) || 3;
+                config.rounds = parseInt(document.getElementById('wNbBreaths').value);
+                config.inhale = parseFloat(document.getElementById('wInhale').value);
+                config.exhale = parseFloat(document.getElementById('wExhale').value);
+                config.hold = parseInt(document.getElementById('wHold').value);
+                config.recover = parseInt(document.getElementById('wRecover').value);
+                state.wimCurrentRound = 1; 
+            } else if(activeMode === 'box') {
+                config.rounds = parseInt(document.getElementById('bNbRounds').value);
+                config.boxInhale = parseFloat(document.getElementById('bInhale').value);
+                config.boxHoldTop = parseFloat(document.getElementById('bHoldTop').value);
+                config.boxExhale = parseFloat(document.getElementById('bExhale').value);
+                config.boxHoldBottom = parseFloat(document.getElementById('bHoldBottom').value);
+            } else if (activeMode === 'fiveseveneight') {
+                config.rounds = parseInt(document.getElementById('fNbRounds').value);
+                config.fInhale = parseFloat(document.getElementById('fInhale').value);
+                config.fHold = parseFloat(document.getElementById('fHold').value);
+                config.fExhale = parseFloat(document.getElementById('fExhale').value);
+            } else if (activeMode === 'meditation') {
+                config.mDuration = parseInt(document.getElementById('mDuration').value);
+            } else {
+                config.rounds = parseInt(document.getElementById('cNbRounds').value);
+                config.inhale = parseFloat(document.getElementById('cInhale').value);
+                config.exhale = parseFloat(document.getElementById('cExhale').value);
+            }
+
+            if(activeMode === 'box') {
+                els.boxPath.classList.add('active');
+                els.halo.style.opacity = '0'; 
+            } else {
+                els.boxPath.classList.remove('active');
+                els.halo.style.opacity = '1';
+                if(activeMode !== 'fiveseveneight' && activeMode !== 'meditation') generateKeyframes(config.inhale, config.exhale);
+                if(activeMode === 'nadi') els.nadiGraphic.classList.add('visible');
+            }
+
+            els.introPanel.classList.remove('visible');
+            els.settingsPanel.classList.remove('visible');
+            els.modalOverlay.classList.remove('visible');
+            els.menuWrapper.classList.add('fade-out'); 
+            els.visualizerLayer.classList.remove('mode-menu');
+            els.visualizerLayer.classList.add('mode-session');
+            setText(els.txtMain, "Start", "");
+            setText(els.txtSub, activeMode === 'meditation' ? "Focus" : "Breathing");
+            if(activeMode === 'nadi') els.centerHud.style.transform = "translateY(25px)";
+            
+            setTimeout(() => {
+                if(activeMode === 'wimhof') startWimHof();
+                else if(activeMode === 'box') startBoxBreathing();
+                else if(activeMode === 'belly') startBellyBreathing();
+                else if(activeMode === 'nadi') startNadiBreathing();
+                else if(activeMode === 'fiveseveneight') startFiveSevenEight();
+                else if(activeMode === 'horse') startHorseStance();
+                else if(activeMode === 'meditation') startMeditation();
+            }, 800);
         }
 
         function endSession() {
             stopAllLogic();
-            els.visualizer.style.display = 'none';
-            els.settings.classList.remove('hidden');
-            renderHistory();
-        }
-
-        function handleTap() {
-            if (state.phase === PHASE_IDLE) startBreathingPhase();
-        }
-
-        // --- Animations ---
-        function generateKeyframes(inhale, exhale) {
-            const total = inhale + exhale;
-            const inhalePercent = (inhale / total) * 100;
-            const css = `
-                @keyframes breatheCycle {
-                    0% { transform: scale(1); box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow); }
-                    ${inhalePercent}% { transform: scale(2.2); box-shadow: 0 0 70px var(--halo-gold-glow), inset 0 0 50px var(--halo-gold-glow); }
-                    100% { transform: scale(1); box-shadow: 0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow); }
-                }
-            `;
-            els.styleSheet.innerText = css;
-        }
-
-        function setRedOverlay(opacity, durationStr) {
-            const transitionCSS = `
-                .halo-ring::after {
-                    transition: opacity ${durationStr} ease-in-out;
-                    opacity: ${opacity};
-                }
-            `;
-            els.styleSheet.innerText += transitionCSS;
-        }
-
-        // --- Phase 1: Breathing ---
-        function startBreathingPhase() {
-            state.phase = PHASE_BREATHING;
-            state.breathCount = 1;
-
-            els.controls.classList.add('active');
+            resetHaloToIdle();
+            els.controls.classList.remove('active');
             els.btnExtend.classList.remove('visible');
-            
-            // Setup Text HTML for side-by-side labels
-            els.topLabel.innerHTML = `
-                <span id="lblInhale" class="breath-word">INHALE</span>
-                <span id="lblExhale" class="breath-word">EXHALE</span>
-            `;
-            els.topLabel.classList.add('active');
-            
-            els.txtSub.innerText = "";
-            els.txtMain.innerText = `1 / ${config.breaths}`;
-
-            // Reset Halo
-            els.halo.style.transition = "none"; 
-            els.halo.style.borderColor = "var(--halo-gold-border)";
-            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
-            setRedOverlay(0, "0s"); 
-
-            const totalDuration = config.inhale + config.exhale;
-            els.halo.style.animation = `breatheCycle ${totalDuration}s ease-in-out infinite`;
-            els.halo.addEventListener('animationiteration', handleBreathIteration);
-
-            breathTextCycle();
+            els.topLabel.classList.remove('active');
+            els.visualizerLayer.classList.remove('mode-session');
+            els.visualizerLayer.classList.add('mode-menu');
+            setTimeout(() => els.menuWrapper.classList.remove('fade-out'), 500); 
         }
 
-        function breathTextCycle() {
-            if (state.phase !== PHASE_BREATHING) return;
-            
-            const i = document.getElementById('lblInhale');
-            const e = document.getElementById('lblExhale');
-
-            // Start Inhale: Highlight Left, Dim Right
-            if(i) i.classList.add('highlight');
-            if(e) e.classList.remove('highlight');
-            
-            if(state.textTimeout) clearTimeout(state.textTimeout);
-            
-            // Wait for inhale duration, then switch
-            state.textTimeout = setTimeout(() => {
-                if (state.phase === PHASE_BREATHING) {
-                    // Start Exhale: Dim Left, Highlight Right
-                    if(i) i.classList.remove('highlight');
-                    if(e) e.classList.add('highlight');
+        function skipStep() {
+            let currentPhase = state.phase;
+            stopAllLogic();
+            if (activeMode === 'wimhof') {
+                if (currentPhase === PHASE_WIM_BREATHING) {
+                    playChime();
+                    startRetentionPhase();
+                } else if (currentPhase === PHASE_WIM_RETENTION) {
+                    playChime();
+                    startRecoveryPhase();
+                } else if (currentPhase === PHASE_WIM_RECOVERY) {
+                    playChime();
+                    if (state.wimCurrentRound < config.wimTotalRounds) {
+                        state.wimCurrentRound++;
+                        startWimHof();
+                    } else finishRound();
                 }
+            } else finishRound(); 
+        }
+
+        function generateKeyframes(inhale, exhale) {
+            const total = inhale + exhale, inhalePercent = (inhale / total) * 100;
+            els.styleSheet.innerText = `@keyframes breatheCycle { 0% { transform: scale(1); border-width: 20px; } ${inhalePercent}% { transform: scale(1.8); border-width: 10px; } 100% { transform: scale(1); border-width: 20px; } }`;
+        }
+
+        function startMeditation() {
+            state.phase = PHASE_MEDITATION;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.topLabel, "MEDITATION", "var(--text-muted)");
+            setText(els.txtSub, "Time Left");
+
+            els.halo.style.animation = "pulseHoldBig 8s ease-in-out infinite"; // Gentle visual pulse
+            els.halo.style.borderColor = "var(--halo-hold)";
+            els.halo.style.borderWidth = "20px";
+
+            let mTimer = config.mDuration * 60; // Converting minutes to seconds
+            setText(els.txtMain, formatTime(mTimer), "");
+
+            state.interval = setInterval(() => {
+                mTimer--;
+                setText(els.txtMain, formatTime(mTimer));
+
+                if (mTimer <= 0) {
+                    clearInterval(state.interval);
+                    playChime(); // Play bell when done
+                    finishRound();
+                }
+            }, 1000);
+        }
+
+        function startWimHof() {
+            state.phase = PHASE_WIM_BREATHING;
+            state.breathCount = 1;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            els.topWatermark.classList.add('active');
+            setText(els.txtSub, "Breaths");
+            setText(els.txtMain, `1 / ${config.rounds}`, "");
+            
+            els.halo.style.animation = "none"; 
+            els.halo.style.transition = "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.8s ease, border-width 0.8s ease"; 
+            els.halo.style.transform = "scale(1)";
+            els.halo.style.borderWidth = "20px";
+            els.halo.style.borderColor = "var(--halo-breathing)";
+            
+            setTimeout(() => {
+                if (state.phase !== PHASE_WIM_BREATHING) return;
+                els.halo.style.transition = "none"; 
+                els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
+                els.halo.addEventListener('animationiteration', wimHofIteration);
+                cycleWimHofText();
+            }, 800);
+        }
+
+        function cycleWimHofText() {
+            if (state.phase !== PHASE_WIM_BREATHING) return;
+            els.topWatermark.innerText = `Round ${state.wimCurrentRound}`;
+            setText(els.topLabel, `INHALE`, "var(--text-main)");
+            state.textTimeout = setTimeout(() => {
+                if (state.phase === PHASE_WIM_BREATHING) setText(els.topLabel, `EXHALE`, "var(--text-muted)");
             }, config.inhale * 1000);
         }
 
-        function handleBreathIteration() {
-            if (state.phase !== PHASE_BREATHING) return;
-            
-            if (state.breathCount < config.breaths) {
+        function wimHofIteration() {
+            if (state.phase !== PHASE_WIM_BREATHING) return;
+            if (state.breathCount < config.rounds) {
                 state.breathCount++;
-                els.txtMain.innerText = `${state.breathCount} / ${config.breaths}`;
-                breathTextCycle();
+                setText(els.txtMain, `${state.breathCount} / ${config.rounds}`);
+                cycleWimHofText();
             } else {
-                els.halo.removeEventListener('animationiteration', handleBreathIteration);
+                els.halo.removeEventListener('animationiteration', wimHofIteration);
+                playChime(); // CHIME: Breathing Phase -> Retention Phase
                 startRetentionPhase();
             }
         }
 
-        // --- Phase 2: Retention ---
         function startRetentionPhase() {
-            state.phase = PHASE_RETENTION;
+            state.phase = PHASE_WIM_RETENTION;
             state.timerVal = config.hold;
-
-            // Stop Breathing logic
+            state.maxTimerVal = config.hold;
             els.halo.style.animation = 'none';
             if(state.textTimeout) clearTimeout(state.textTimeout);
             void els.halo.offsetWidth; 
-
-            // Update Text: Switch to single label
-            els.topLabel.innerHTML = '<div class="simple-label">HOLD</div>';
-            els.topLabel.classList.add('active');
-            els.txtSub.innerText = ""; 
-
-            // Deflate to Grey
-            els.halo.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease, box-shadow 1s ease";
-            
+            setText(els.topLabel, "HOLD BREATH", "var(--text-muted)");
+            setText(els.txtSub, "Retention");
+            els.halo.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease";
             requestAnimationFrame(() => {
                 els.halo.style.transform = "scale(0.85)";
-                els.halo.style.borderColor = "var(--halo-grey-border)";
-                els.halo.style.boxShadow = "0 0 20px var(--halo-grey-glow), inset 0 0 20px var(--halo-grey-glow)";
+                els.halo.style.borderColor = "var(--halo-hold)";
+                els.halo.style.borderWidth = "20px";
             });
-
-            // Heartbeat (Grey)
-            setTimeout(() => {
-                if (state.phase === PHASE_RETENTION) {
-                    els.halo.style.animation = "heartbeat 1.5s ease-in-out infinite";
-                }
-            }, 2000); 
-
-            // Red Overlay
-            setTimeout(() => {
-                if(state.phase === PHASE_RETENTION) {
-                    setRedOverlay(1, `${state.timerVal}s`); 
-                }
-            }, 100);
-
-            els.txtMain.innerText = formatTime(state.timerVal);
+            setTimeout(() => { if (state.phase === PHASE_WIM_RETENTION) els.halo.style.animation = "heartbeat 1.5s ease-in-out infinite"; }, 2000); 
+            setText(els.txtMain, formatTime(state.timerVal), "");
             els.btnExtend.classList.add('visible');
-
             state.interval = setInterval(() => {
-                els.txtMain.innerText = formatTime(state.timerVal);
-                state.timerVal--;
-                if (state.timerVal < 0) {
+                let progress = 1 - (state.timerVal / state.maxTimerVal);
+                let tr = Math.floor(52 + (19 - 52) * progress), tg = Math.floor(116 + (19 - 116) * progress), tb = Math.floor(240 + (19 - 240) * progress);
+                setText(els.txtMain, formatTime(state.timerVal), `rgb(${tr}, ${tg}, ${tb})`);
+                let r = Math.floor(94 + (211 - 94) * progress), g = Math.floor(107 + (47 - 107) * progress), b = Math.floor(124 + (47 - 124) * progress);
+                els.halo.style.borderColor = `rgb(${r}, ${g}, ${b})`;
+                if (--state.timerVal < 0) {
                     clearInterval(state.interval);
+                    playChime(); // CHIME: Retention Phase -> Recovery Phase
                     startRecoveryPhase();
                 }
             }, 1000);
@@ -605,131 +886,358 @@
         function extendTimer(e) {
             e.stopPropagation();
             state.timerVal += 15;
-            els.txtMain.innerText = formatTime(state.timerVal); 
-            
-            const btn = els.btnExtend;
-            btn.style.transform = "translateY(-50%) scale(1.2)";
-            setTimeout(() => btn.style.transform = "translateY(-50%) scale(1)", 200);
+            state.maxTimerVal += 15;
+            setText(els.txtMain, formatTime(state.timerVal)); 
         }
 
-        // --- Phase 3: Recovery ---
         function startRecoveryPhase() {
-            logHistory(config.hold + (state.timerVal < 0 ? 0 : 0)); 
-            state.phase = PHASE_RECOVERY;
+            state.phase = PHASE_WIM_RECOVERY;
             stopAllLogic();
-
             els.btnExtend.classList.remove('visible');
-            setRedOverlay(0, "0.1s");
-            els.halo.style.animation = 'none'; 
             
-            // Expand to FULL SIZE (2.2) & Turn Blue
             setTimeout(() => {
-                els.halo.style.transition = "transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.5s ease, box-shadow 0.5s ease";
-                
-                // Full expansion
-                els.halo.style.transform = "scale(2.2)"; 
-                els.halo.style.borderColor = "var(--halo-blue-border)";
-                els.halo.style.boxShadow = "0 0 40px var(--halo-blue-glow), inset 0 0 30px var(--halo-blue-glow)";
-                
-                // Add Blue Heartbeat Pulse at Expanded Size
-                setTimeout(() => {
-                    if (state.phase === PHASE_RECOVERY) {
-                        els.halo.style.animation = "heartbeatBlueExpanded 1.5s ease-in-out infinite";
-                    }
-                }, 1500);
-
+                els.halo.style.transition = "transform 1.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s linear";
+                els.halo.style.transform = "scale(1.8)"; 
+                els.halo.style.borderWidth = "10px"; 
+                setTimeout(() => { if (state.phase === PHASE_WIM_RECOVERY) els.halo.style.animation = "heartbeatBlueBig 1.5s ease-in-out infinite"; }, 1000);
             }, 50);
 
-            // Update Text
-            els.topLabel.innerHTML = '<div class="simple-label">RECOVERY</div>';
-            els.txtSub.innerText = "";
+            setText(els.topLabel, "INHALE & HOLD", "var(--accent-blue)");
+            setText(els.txtSub, "Recovery");
 
-            setTimeout(() => {
-                let rTimer = config.recover;
-                els.txtMain.innerText = `${rTimer}s`;
+            let rTimer = config.recover;
+            let maxRTimer = config.recover;
+            
+            setText(els.txtMain, `${rTimer}s`, "rgb(19, 19, 19)");
+            els.halo.style.borderColor = "rgb(211, 47, 47)";
+            
+            state.interval = setInterval(() => {
+                rTimer--;
                 
-                state.interval = setInterval(() => {
-                    els.txtMain.innerText = `${rTimer}s`;
-                    rTimer--;
-                    if (rTimer < 0) finishRound();
-                }, 1000);
+                let progress = 1 - (Math.max(0, rTimer) / maxRTimer);
+                
+                let tr = Math.floor(19 + (52 - 19) * progress);
+                let tg = Math.floor(19 + (116 - 19) * progress);
+                let tb = Math.floor(19 + (240 - 19) * progress);
+                
+                let hr = Math.floor(211 + (52 - 211) * progress);
+                let hg = Math.floor(47 + (116 - 47) * progress);
+                let hb = Math.floor(47 + (240 - 47) * progress);
+
+                setText(els.txtMain, `${Math.max(0, rTimer)}s`, `rgb(${tr}, ${tg}, ${tb})`);
+                els.halo.style.borderColor = `rgb(${hr}, ${hg}, ${hb})`;
+
+                if (rTimer < 0) {
+                    clearInterval(state.interval);
+                    playChime(); // CHIME: Recovery Phase -> Next Round OR Finish
+                    if (state.wimCurrentRound < config.wimTotalRounds) {
+                        state.wimCurrentRound++;
+                        startWimHof();
+                    } else {
+                        finishRound();
+                    }
+                }
             }, 1000);
+        }
+
+        // ---------- Box Breathing Logic -----------
+        function startBoxBreathing() {
+            state.phase = PHASE_ACTIVE;
+            state.breathCount = 1;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.txtSub, ""); 
+            els.boxDot.style.transition = "none";
+            els.boxDot.style.top = "100%";
+            els.boxDot.style.left = "0%";
+            void els.boxDot.offsetWidth;
+            runBoxCycle();
+        }
+
+        function runBoxCycle() {
+            if(state.phase !== PHASE_ACTIVE) return;
+            if(state.breathCount > config.rounds) return finishRound();
+            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`, "var(--text-muted)");
+            setText(els.txtMain, "INHALE", "var(--accent-blue)");
+            
+            els.boxPath.style.animation = "none";
+            
+            els.boxDot.style.transition = `top ${config.boxInhale}s linear, left ${config.boxInhale}s linear, background 0.3s ease`;
+            els.boxDot.style.top = "0%";
+            els.boxDot.style.left = "0%";
+            els.boxDot.style.background = "var(--accent-blue)";
+            els.boxDot.style.boxShadow = "0 0 12px var(--accent-blue)";
+            state.textTimeout = setTimeout(() => {
+                if(state.phase !== PHASE_ACTIVE) return;
+                setText(els.txtMain, "HOLD", "var(--halo-hold)"); 
+                els.boxPath.style.animation = "pulseHoldBox 1.5s ease-in-out infinite"; 
+                els.boxDot.style.transition = `top ${config.boxHoldTop}s linear, left ${config.boxHoldTop}s linear, background 0.3s ease`;
+                els.boxDot.style.left = "100%";
+                els.boxDot.style.background = "var(--halo-hold)"; 
+                els.boxDot.style.boxShadow = "none";
+                state.textTimeout = setTimeout(() => {
+                    if(state.phase !== PHASE_ACTIVE) return;
+                    setText(els.txtMain, "EXHALE", "var(--text-main)");
+                    els.boxPath.style.animation = "none"; 
+                    els.boxDot.style.transition = `top ${config.boxExhale}s linear, left ${config.boxExhale}s linear, background 0.3s ease`;
+                    els.boxDot.style.top = "100%";
+                    els.boxDot.style.background = "var(--accent-blue)"; 
+                    els.boxDot.style.boxShadow = "0 0 12px var(--accent-blue)";
+                    state.textTimeout = setTimeout(() => {
+                        if(state.phase !== PHASE_ACTIVE) return;
+                        setText(els.txtMain, "HOLD", "var(--halo-hold)");
+                        els.boxPath.style.animation = "pulseHoldBox 1.5s ease-in-out infinite";
+                        els.boxDot.style.transition = `top ${config.boxHoldBottom}s linear, left ${config.boxHoldBottom}s linear, background 0.3s ease`;
+                        els.boxDot.style.left = "0%";
+                        els.boxDot.style.background = "var(--halo-hold)"; 
+                        els.boxDot.style.boxShadow = "none";
+                        state.textTimeout = setTimeout(() => {
+                            if(state.phase !== PHASE_ACTIVE) return;
+                            state.breathCount++;
+                            runBoxCycle(); 
+                        }, config.boxHoldBottom * 1000);
+                    }, config.boxExhale * 1000);
+                }, config.boxHoldTop * 1000);
+            }, config.boxInhale * 1000);
+        }
+
+        // ---------- Belly Breathing Logic -----------
+        function startBellyBreathing() {
+            state.phase = PHASE_ACTIVE;
+            state.breathCount = 1;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.txtMain, "", ""); 
+            els.halo.style.transition = "none"; 
+            els.halo.style.borderColor = "var(--halo-breathing)";
+            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
+            els.halo.addEventListener('animationiteration', bellyIteration);
+            cycleBellyText();
+        }
+
+        function cycleBellyText() {
+            if (state.phase !== PHASE_ACTIVE) return;
+            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
+            setText(els.txtMain, "INHALE", "var(--accent-blue)");
+            setText(els.txtSub, "Belly Rises");
+            state.textTimeout = setTimeout(() => {
+                if (state.phase === PHASE_ACTIVE) {
+                    setText(els.txtMain, "EXHALE", "var(--text-main)");
+                    setText(els.txtSub, "Belly Falls");
+                }
+            }, config.inhale * 1000);
+        }
+
+        function bellyIteration() {
+            if (state.phase !== PHASE_ACTIVE) return;
+            if (state.breathCount < config.rounds) {
+                state.breathCount++;
+                cycleBellyText();
+            } else finishRound();
+        }
+
+        // ---------- Nadi Shodhana Logic -----------
+        function startNadiBreathing() {
+            state.phase = PHASE_NADI;
+            state.breathCount = 1;
+            state.nadiStep = 0; 
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.txtMain, "", ""); 
+            els.halo.style.transition = "none"; 
+            els.halo.style.borderColor = "var(--halo-breathing)";
+            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
+            els.halo.addEventListener('animationiteration', nadiIteration);
+            cycleNadiText();
+        }
+
+        function cycleNadiText() {
+            if (state.phase !== PHASE_NADI) return;
+            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
+            els.nadiGraphic.classList.remove('block-left', 'block-right');
+            if(state.nadiStep === 0) {
+                setText(els.txtMain, "INHALE", "var(--accent-blue)");
+                setText(els.txtSub, "Right Nostril");
+                els.nadiGraphic.classList.add('block-right'); 
+                state.textTimeout = setTimeout(() => {
+                    if (state.phase === PHASE_NADI) {
+                        state.nadiStep = 1; 
+                        els.nadiGraphic.classList.remove('block-right'); 
+                        cycleNadiText();
+                    }
+                }, config.inhale * 1000);
+            } else if (state.nadiStep === 1) {
+                setText(els.txtMain, "EXHALE", "var(--text-main)");
+                setText(els.txtSub, "Left Nostril");
+                els.nadiGraphic.classList.add('block-left'); 
+            } else if (state.nadiStep === 2) {
+                setText(els.txtMain, "INHALE", "var(--accent-blue)");
+                setText(els.txtSub, "Left Nostril");
+                els.nadiGraphic.classList.add('block-left'); 
+                state.textTimeout = setTimeout(() => {
+                    if (state.phase === PHASE_NADI) {
+                        state.nadiStep = 3; 
+                        els.nadiGraphic.classList.remove('block-left'); 
+                        cycleNadiText();
+                    }
+                }, config.inhale * 1000);
+            } else if (state.nadiStep === 3) {
+                setText(els.txtMain, "EXHALE", "var(--text-main)");
+                setText(els.txtSub, "Right Nostril");
+                els.nadiGraphic.classList.add('block-right'); 
+            }
+        }
+
+        function nadiIteration() {
+            if (state.phase !== PHASE_NADI) return;
+            if(state.nadiStep === 1) {
+                state.nadiStep = 2;
+                cycleNadiText();
+            } else if(state.nadiStep === 3) {
+                if (state.breathCount < config.rounds) {
+                    state.breathCount++;
+                    state.nadiStep = 0; 
+                    cycleNadiText();
+                } else finishRound();
+            }
+        }
+
+        // ---------- 5-7-8 Breathing Logic -----------
+        function startFiveSevenEight() {
+            state.phase = PHASE_578;
+            state.breathCount = 1;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.txtSub, ""); 
+            els.halo.style.animation = "none";
+            runFiveSevenEightCycle();
+        }
+
+        function runFiveSevenEightCycle() {
+            if (state.phase !== PHASE_578) return;
+            if (state.breathCount > config.rounds) return finishRound();
+            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`, "var(--text-muted)");
+            setText(els.txtMain, "INHALE", "var(--accent-blue)");
+            
+            els.halo.style.animation = "none"; 
+            void els.halo.offsetWidth; 
+            
+            els.halo.style.transition = `transform ${config.fInhale}s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.5s ease, border-width ${config.fInhale}s cubic-bezier(0.65, 0, 0.35, 1)`;
+            els.halo.style.transform = "scale(1.8)";
+            els.halo.style.borderWidth = "10px";
+            els.halo.style.borderColor = "var(--halo-breathing)";
+            
+            state.phaseTimeout = setTimeout(() => {
+                if (state.phase !== PHASE_578) return;
+                setText(els.txtMain, "HOLD", "var(--halo-hold)");
+                els.halo.style.transition = "border-color 0.5s ease";
+                els.halo.style.borderColor = "var(--halo-hold)";
+                
+                setTimeout(() => {
+                    if (state.phase === PHASE_578) els.halo.style.animation = "pulseHoldBig 1.5s ease-in-out infinite";
+                }, 500); 
+
+                state.phaseTimeout = setTimeout(() => {
+                    if (state.phase !== PHASE_578) return;
+                    setText(els.txtMain, "EXHALE", "var(--text-main)");
+                    
+                    els.halo.style.animation = "none"; 
+                    void els.halo.offsetWidth; 
+                    
+                    els.halo.style.transition = `transform ${config.fExhale}s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.5s ease, border-width ${config.fExhale}s cubic-bezier(0.65, 0, 0.35, 1)`;
+                    els.halo.style.transform = "scale(1)";
+                    els.halo.style.borderWidth = "20px";
+                    els.halo.style.borderColor = "var(--halo-breathing)";
+                    
+                    state.phaseTimeout = setTimeout(() => {
+                        if (state.phase !== PHASE_578) return;
+                        state.breathCount++;
+                        runFiveSevenEightCycle();
+                    }, config.fExhale * 1000);
+                }, config.fHold * 1000);
+            }, config.fInhale * 1000);
+        }
+
+        // ---------- Horse Stance Logic -----------
+        function startHorseStance() {
+            state.phase = PHASE_ACTIVE;
+            state.breathCount = 1;
+            els.controls.classList.add('active');
+            els.topLabel.classList.add('active');
+            setText(els.txtMain, "", ""); 
+            els.halo.style.transition = "none"; 
+            els.halo.style.borderColor = "var(--halo-breathing)";
+            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
+            els.halo.addEventListener('animationiteration', horseIteration);
+            cycleHorseText();
+        }
+
+        function cycleHorseText() {
+            if (state.phase !== PHASE_ACTIVE) return;
+            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
+            setText(els.txtMain, "INHALE", "var(--accent-blue)");
+            setText(els.txtSub, "Sink Base");
+            state.textTimeout = setTimeout(() => {
+                if (state.phase === PHASE_ACTIVE) {
+                    setText(els.txtMain, "EXHALE", "var(--text-main)");
+                    setText(els.txtSub, "Hold Ground");
+                }
+            }, config.inhale * 1000);
+        }
+
+        function horseIteration() {
+            if (state.phase !== PHASE_ACTIVE) return;
+            if (state.breathCount < config.rounds) {
+                state.breathCount++;
+                cycleHorseText();
+            } else finishRound();
         }
 
         function finishRound() {
             stopAllLogic();
-            els.halo.style.animation = 'none'; 
-            els.halo.style.transition = 'transform 2s ease, border-color 2s, box-shadow 2s';
-            els.halo.style.transform = 'scale(1)';
-            els.halo.style.borderColor = "var(--halo-gold-border)";
-            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
-
-            els.topLabel.innerHTML = ""; // Clear top label
-            els.txtMain.innerText = "Done";
-            els.txtSub.innerText = "Relax";
-            setTimeout(endSession, 3000);
-        }
-
-        // --- Helpers ---
-        function skipStep() {
-            stopAllLogic();
-            if (state.phase === PHASE_BREATHING) {
-                els.halo.removeEventListener('animationiteration', handleBreathIteration);
-                startRetentionPhase();
-            } else if (state.phase === PHASE_RETENTION) {
-                startRecoveryPhase();
-            } else if (state.phase === PHASE_RECOVERY) {
-                finishRound();
-            }
+            resetHaloToIdle();
+            setText(els.topLabel, "COMPLETE", "var(--text-muted)");
+            setText(els.txtMain, "Done", "");
+            setText(els.txtSub, "");
+            setTimeout(endSession, 2000);
         }
 
         function stopAllLogic() {
+            state.phase = PHASE_IDLE;
             if (state.interval) clearInterval(state.interval);
             if (state.textTimeout) clearTimeout(state.textTimeout);
+            if (state.phaseTimeout) clearTimeout(state.phaseTimeout);
             els.halo.style.animation = 'none';
-            els.halo.removeEventListener('animationiteration', handleBreathIteration);
+            els.boxPath.style.animation = 'none';
+            els.halo.removeEventListener('animationiteration', wimHofIteration);
+            els.halo.removeEventListener('animationiteration', bellyIteration);
+            els.halo.removeEventListener('animationiteration', nadiIteration);
+            els.halo.removeEventListener('animationiteration', horseIteration);
+            els.nadiGraphic.classList.remove('visible', 'block-left', 'block-right');
+            els.topWatermark.classList.remove('active');
         }
 
-        function resetToIdle() {
-            state.phase = PHASE_IDLE;
-            
-            els.halo.style.transform = 'scale(1)';
-            els.halo.style.borderColor = "var(--halo-gold-border)";
-            els.halo.style.boxShadow = "0 0 40px var(--halo-gold-glow), inset 0 0 40px var(--halo-gold-glow)";
-            els.halo.style.transition = 'none';
-            setRedOverlay(0, "0s");
-            
-            els.controls.classList.remove('active');
-            els.btnExtend.classList.remove('visible');
-            els.topLabel.classList.remove('active');
-            
-            els.txtMain.innerText = "START";
-            els.txtSub.innerText = "Tap Ring";
+        function resetHaloToIdle() {
+            setText(els.txtMain, "<sub>2</sub>", "");
+            setText(els.txtSub, "FLOW");
+            els.centerHud.style.transform = "translateY(0px)";
+            els.halo.style.opacity = ''; 
+            els.halo.style.transform = '';
+            els.halo.style.borderColor = "";
+            els.halo.style.borderWidth = "";
+            els.halo.style.boxShadow = "";
+            els.halo.style.transition = '';
+            els.boxPath.classList.remove('active');
+            els.boxPath.style.animation = "none";
+            els.boxDot.style.transition = "none";
+            els.boxDot.style.top = "100%";
+            els.boxDot.style.left = "0%";
         }
 
         function formatTime(s) {
             if (s < 0) return "0:00";
-            const min = Math.floor(s / 60);
-            const sec = s % 60;
+            const min = Math.floor(s / 60), sec = s % 60;
             return `${min}:${sec < 10 ? '0'+sec : sec}`;
-        }
-
-        function logHistory(val) {
-             const now = new Date();
-             const ts = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
-             state.history.unshift({ time: ts, dur: "Round" });
-        }
-
-        function renderHistory() {
-            const container = els.historyLog;
-            container.innerHTML = "";
-            state.history.forEach(h => {
-                const div = document.createElement('div');
-                div.innerText = `${h.time} - Complete`;
-                div.style.padding = "4px 0";
-                div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-                container.appendChild(div);
-            });
         }
     </script>
 </body>
