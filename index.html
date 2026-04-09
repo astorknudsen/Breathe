@@ -1,1244 +1,830 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O2 Flow</title>
-    <style>
-        /* --- Palette & Design --- */
-        :root {
-            --bg-color: #F5F7FA;
-            --card-bg: #FFFFFF;
-            --text-main: #131313;
-            --text-muted: #8492a6;
-            --text-sub: #323232;
-            --accent-blue: #3474F0;
-            --halo-breathing: #3474F0; 
-            --halo-hold: #5e6b7c;
-            --halo-recover: #3474F0;
-            --ring-size: 140px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O2 Flow</title>
+<style>
+:root{--bg-color:#F5F7FA;--card-bg:#FFFFFF;--text-main:#131313;--text-muted:#8492a6;--text-sub:#323232;--accent-blue:#3474F0;--halo-breathing:#3474F0;--halo-hold:#5e6b7c;--ring-size:140px;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg-color);color:var(--text-main);min-height:100vh;overflow:hidden;position:relative;}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
+.hamburger-btn{position:fixed;top:18px;left:18px;z-index:200;width:38px;height:38px;background:var(--card-bg);border:none;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 12px rgba(0,0,0,0.08);transition:background 0.2s;}
+.hamburger-btn:hover{background:#f0f0f0;}
+.hamburger-btn span{display:block;width:18px;height:2px;background:var(--text-sub);border-radius:2px;transition:all 0.3s;}
+.hamburger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger-btn.open span:nth-child(2){opacity:0;}
+.hamburger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-        body {
-            background: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
+.drawer{position:fixed;top:0;left:0;height:100%;width:220px;background:var(--card-bg);z-index:190;box-shadow:4px 0 24px rgba(0,0,0,0.07);transform:translateX(-100%);transition:transform 0.35s cubic-bezier(0.2,0.8,0.2,1);display:flex;flex-direction:column;padding-top:72px;}
+.drawer.open{transform:translateX(0);}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.18);z-index:180;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.drawer-overlay.open{opacity:1;pointer-events:auto;}
+.drawer-nav{display:flex;flex-direction:column;gap:4px;padding:0 12px;}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:600;color:var(--text-muted);transition:background 0.15s,color 0.15s;border:none;background:none;text-align:left;width:100%;}
+.drawer-item:hover{background:#f4f6f9;color:var(--text-main);}
+.drawer-item.active{background:#EEF3FE;color:var(--accent-blue);}
+.drawer-icon{width:18px;height:18px;flex-shrink:0;}
 
-        /* --- VISUALIZER LAYER --- */
-        .visualizer-layer {
-            position: fixed;
-            left: 0;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-            pointer-events: none;
-            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        
-        .visualizer-layer.mode-menu {
-            top: 20%;
-            transform: translateY(-50%) scale(0.85);
-        }
-        
-        .visualizer-layer.mode-session {
-            top: 50%;
-            transform: translateY(-50%) scale(1);
-        }
+.visualizer-layer{position:fixed;left:0;width:100%;display:flex;align-items:center;justify-content:center;z-index:5;pointer-events:none;transition:transform 0.8s cubic-bezier(0.2,0.8,0.2,1),top 0.8s cubic-bezier(0.2,0.8,0.2,1);}
+.visualizer-layer.mode-menu{top:20%;transform:translateY(-50%) scale(0.85);}
+.visualizer-layer.mode-session{top:50%;transform:translateY(-50%) scale(1);}
+.halo-wrapper{position:relative;width:var(--ring-size);height:var(--ring-size);display:flex;align-items:center;justify-content:center;}
+.halo-ring{width:100%;height:100%;border-radius:50%;background:transparent;border:20px solid var(--accent-blue);position:absolute;z-index:1;transition:all 0.5s ease-out,opacity 0.5s ease;will-change:transform,border-color,border-width;box-shadow:0 10px 40px rgba(52,116,240,0.25);opacity:1;}
+.visualizer-layer.mode-menu .halo-ring{opacity:1!important;box-shadow:0 15px 45px rgba(52,116,240,0.15);border-width:25px;}
+.visualizer-layer.mode-menu .hud-main{font-size:16rem;font-weight:800;letter-spacing:-2px;transform:translateX(110px) translateY(20px);}
+.visualizer-layer.mode-menu .hud-sub{font-size:1.6rem;letter-spacing:5px;font-weight:700;margin-top:60px;margin-left:20px;}
+@media(max-width:480px){.visualizer-layer.mode-menu .hud-main{font-size:11rem;transform:translateX(80px) translateY(15px);}.visualizer-layer.mode-menu .halo-ring{border-width:20px;}}
+.box-path{position:absolute;width:150px;height:150px;border:4px solid #EAEAEA;border-radius:8px;z-index:1;opacity:0;pointer-events:none;transition:opacity 0.5s ease;}
+.box-path.active{opacity:1;}
+.box-dot{position:absolute;width:18px;height:18px;background:var(--accent-blue);border-radius:50%;transform:translate(-50%,-50%);left:0%;top:100%;box-shadow:0 0 12px var(--accent-blue);z-index:2;}
+.nadi-graphic{position:absolute;top:15px;width:55px;height:65px;z-index:10;opacity:0;transition:opacity 0.5s ease;}
+.nadi-graphic.visible{opacity:1;}
+.nose-line{fill:none;stroke:var(--text-muted);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.finger{fill:#EAEAEA;transition:fill 0.3s ease,transform 0.3s cubic-bezier(0.2,0.8,0.2,1);}
+.nadi-graphic.block-left #fingerLeft{fill:var(--accent-blue);transform:translateX(6px);}
+.nadi-graphic.block-right #fingerRight{fill:var(--accent-blue);transform:translateX(-6px);}
 
-        .halo-wrapper {
-            position: relative;
-            width: var(--ring-size); 
-            height: var(--ring-size);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.menu-wrapper{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;transition:opacity 0.5s ease,transform 0.5s ease;overflow-y:auto;padding-bottom:40px;mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.menu-wrapper.fade-out{opacity:0;transform:translateY(40px);pointer-events:none;}
+.menu-title{text-align:center;font-size:0.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;flex-shrink:0;}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:90%;max-width:900px;}
+.menu-card{background:var(--card-bg);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.04);cursor:pointer;transition:transform 0.2s cubic-bezier(0.2,0.8,0.2,1),box-shadow 0.2s;display:flex;flex-direction:column;overflow:hidden;}
+.menu-card:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.08);}
+.menu-card.clicked{transform:scale(1.05);box-shadow:0 25px 60px rgba(52,116,240,0.2);z-index:15;}
+.menu-card-img{width:100%;height:130px;object-fit:cover;background:#eef1f6;}
+.menu-card-content{padding:20px;flex:1;}
+.menu-card h3{font-size:1.15rem;margin-bottom:8px;}
+.menu-card p{font-size:0.85rem;color:var(--text-muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+@media(max-width:600px){.menu-grid{grid-template-columns:1fr;gap:15px;}.menu-card-img{height:110px;}.menu-card-content{padding:15px;}}
 
-        .halo-ring {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: transparent;
-            border: 20px solid var(--accent-blue);
-            position: absolute; 
-            z-index: 1;
-            transition: all 0.5s ease-out, opacity 0.5s ease;
-            will-change: transform, border-color, border-width;
-            box-shadow: 0 10px 40px rgba(52, 116, 240, 0.25);
-            opacity: 1;
-        }
+/* SESSION */
+.session-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;padding-bottom:40px;opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.session-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+.session-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
+.session-queue{display:flex;flex-direction:column;gap:12px;width:90%;max-width:600px;padding-top:8px;}
+.queue-slot{background:var(--card-bg);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,0.05);overflow:hidden;}
+.queue-slot-header{display:flex;align-items:center;gap:10px;padding:12px 16px;}
+.slot-number{width:26px;height:26px;border-radius:50%;background:#EEF3FE;color:var(--accent-blue);font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.slot-info{flex:1;min-width:0;}
+.slot-title{font-size:0.9rem;font-weight:600;color:var(--text-main);}
 
-        .visualizer-layer.mode-menu .halo-ring {
-            opacity: 1 !important; 
-            box-shadow: 0 15px 45px rgba(52, 116, 240, 0.15); 
-            border-width: 25px; 
-        }
-        .visualizer-layer.mode-menu .hud-main {
-            font-size: 16rem; 
-            font-weight: 800; 
-            letter-spacing: -2px;
-            transform: translateX(110px) translateY(20px); 
-        }
-        .visualizer-layer.mode-menu .hud-sub {
-            font-size: 1.6rem;
-            letter-spacing: 5px;
-            font-weight: 700;
-            margin-top: 60px; 
-            margin-left: 20px;
-        }
+/* Inline round stepper on header */
+.slot-rounds{display:flex;align-items:center;gap:0;background:#F4F6FA;border-radius:8px;overflow:hidden;flex-shrink:0;}
+.slot-rounds-label{font-size:0.65rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:0 6px;white-space:nowrap;}
+.slot-rounds-btn{background:none;border:none;cursor:pointer;width:26px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;}
+.slot-rounds-btn:hover{background:#DDE8FD;}
+.slot-rounds-val{font-size:0.85rem;font-weight:700;color:var(--text-main);min-width:22px;text-align:center;}
 
-        @media (max-width: 480px) {
-            .visualizer-layer.mode-menu .hud-main { font-size: 11rem; transform: translateX(80px) translateY(15px); }
-            .visualizer-layer.mode-menu .halo-ring { border-width: 20px; }
-        }
+.slot-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.slot-btn{background:none;border:none;cursor:pointer;padding:5px;border-radius:7px;color:var(--text-muted);font-size:0.75rem;transition:background 0.15s,color 0.15s;}
+.slot-btn:hover{background:#f4f6f9;color:var(--text-main);}
+.slot-btn.remove{color:#e57373;}
+.slot-btn.remove:hover{background:#FFEBEE;}
 
-        .box-path {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            border: 4px solid #EAEAEA;
-            border-radius: 8px; 
-            z-index: 1;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-        .box-path.active { opacity: 1; }
+/* Expand for extra params */
+.slot-expand{background:#FAFAFA;border-top:1px solid #f0f0f0;padding:12px 16px;display:none;}
+.slot-expand.open{display:block;}
+.slot-expand-toggle{font-size:0.7rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:4px;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border:none;background:none;padding:0;}
+.slot-expand-toggle:hover{color:var(--accent-blue);}
+.stepper-row{display:flex;flex-wrap:wrap;gap:10px;}
+.stepper-item{display:flex;flex-direction:column;gap:5px;flex:1;min-width:90px;}
+.stepper-item label{font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;}
+.stepper-ctrl{display:flex;align-items:center;background:#FFF;border:1px solid #E6E6E6;border-radius:9px;overflow:hidden;}
+.stepper-ctrl button{background:none;border:none;cursor:pointer;width:28px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--accent-blue);font-size:1.1rem;font-weight:700;transition:background 0.15s;flex-shrink:0;}
+.stepper-ctrl button:hover{background:#EEF3FE;}
+.stepper-val{flex:1;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-main);}
 
-        .box-dot {
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: var(--accent-blue);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            left: 0%; 
-            top: 100%; 
-            box-shadow: 0 0 12px var(--accent-blue);
-            z-index: 2;
-        }
+.add-slot-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--card-bg);border:2px dashed #DDE3EE;border-radius:16px;cursor:pointer;color:var(--text-muted);font-size:0.9rem;font-weight:600;transition:all 0.2s;}
+.add-slot-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue);background:#F4F7FF;}
+.technique-picker{position:fixed;inset:0;z-index:160;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.technique-picker.open{opacity:1;pointer-events:auto;}
+.technique-picker-bg{position:absolute;inset:0;background:rgba(245,247,250,0.7);backdrop-filter:blur(4px);}
+.technique-picker-sheet{position:relative;z-index:1;background:var(--card-bg);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.1);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.2,0.8,0.2,1);}
+.technique-picker.open .technique-picker-sheet{transform:translateY(0);}
+.picker-title{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;text-align:center;}
+.picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.picker-option{padding:14px 16px;background:#FAFAFA;border:1px solid #EEE;border-radius:12px;cursor:pointer;transition:all 0.15s;}
+.picker-option:hover{background:#EEF3FE;border-color:#c5d6fb;}
+.picker-option h4{font-size:0.9rem;font-weight:600;margin-bottom:3px;}
+.picker-option p{font-size:0.75rem;color:var(--text-muted);}
+.session-start-bar{display:flex;gap:10px;width:90%;max-width:600px;margin-top:4px;flex-shrink:0;}
+.btn-session-start{flex:1;padding:16px;border-radius:14px;background:var(--accent-blue);color:#FFF;font-size:1rem;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(52,116,240,0.2);transition:transform 0.1s;}
+.btn-session-start:active{transform:scale(0.98);}
+.btn-session-start:disabled{opacity:0.4;cursor:not-allowed;}
 
-        .nadi-graphic {
-            position: absolute;
-            top: 15px; 
-            width: 55px; 
-            height: 65px;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .nadi-graphic.visible { opacity: 1; }
-        .nose-line { fill: none; stroke: var(--text-muted); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-        .finger { fill: #EAEAEA; transition: fill 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .nadi-graphic.block-left #fingerLeft { fill: var(--accent-blue); transform: translateX(6px); }
-        .nadi-graphic.block-right #fingerRight { fill: var(--accent-blue); transform: translateX(-6px); }
+/* STATS */
+.stats-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;padding-bottom:40px;opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 92%,transparent 100%);}
+.stats-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+.stats-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
+.stats-inner{width:90%;max-width:700px;padding-top:8px;display:flex;flex-direction:column;gap:16px;}
+.stat-cards-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.stat-card{background:var(--card-bg);border-radius:14px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.04);text-align:center;}
+.stat-card-val{font-size:1.8rem;font-weight:800;color:var(--accent-blue);line-height:1.1;}
+.stat-card-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;font-weight:600;}
+.stat-streak-fire{font-size:1.4rem;margin-bottom:2px;}
+.chart-card{background:var(--card-bg);border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.04);}
+.chart-card-title{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;font-weight:700;}
+.radar-wrap{display:flex;justify-content:center;}
+.bar-list{display:flex;flex-direction:column;gap:10px;}
+.bar-item{display:flex;align-items:center;gap:10px;}
+.bar-label{font-size:0.8rem;font-weight:600;color:var(--text-sub);width:110px;flex-shrink:0;text-align:right;}
+.bar-track{flex:1;background:#F0F2F5;border-radius:6px;height:10px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;background:var(--accent-blue);transition:width 0.8s cubic-bezier(0.2,0.8,0.2,1);}
+.bar-count{font-size:0.75rem;font-weight:700;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0;}
+.history-list{display:flex;flex-direction:column;gap:8px;}
+.history-item{display:flex;align-items:center;gap:12px;background:#FAFAFA;border-radius:10px;padding:10px 14px;}
+.history-dot{width:10px;height:10px;border-radius:50%;background:var(--accent-blue);flex-shrink:0;}
+.history-name{font-size:0.85rem;font-weight:600;color:var(--text-main);flex:1;}
+.history-meta{font-size:0.75rem;color:var(--text-muted);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.9rem;line-height:1.6;}
 
-        .menu-wrapper {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 65vh; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 10;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            overflow-y: auto; 
-            padding-bottom: 40px;
-            mask-image: linear-gradient(to top, black 90%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, black 90%, transparent 100%);
-        }
-        .menu-wrapper.fade-out {
-            opacity: 0;
-            transform: translateY(40px);
-            pointer-events: none;
-        }
+/* MODALS */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(245,247,250,0.85);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 0.5s ease;z-index:15;}
+.modal-overlay.visible{opacity:1;pointer-events:auto;}
+.modal-card{background:var(--card-bg);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.08);position:absolute;top:50%;left:50%;transform:translate(-50%,40px) scale(0.95);opacity:0;pointer-events:none;z-index:20;transition:transform 0.5s cubic-bezier(0.2,0.8,0.2,1),opacity 0.4s ease;max-width:90%;width:100%;}
+.modal-card.visible{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto;}
+.intro-layout{display:flex;max-width:750px;overflow:hidden;}
+.intro-left{flex:1;background:#f4f6f9;}
+.intro-left img{width:100%;height:100%;object-fit:cover;display:block;}
+.intro-right{flex:1.2;padding:40px;display:flex;flex-direction:column;justify-content:center;}
+@media(max-width:700px){.intro-layout{flex-direction:column;}.intro-left img{height:200px;}.intro-right{padding:25px;}}
+.settings-layout{max-width:400px;padding:30px;text-align:center;}
+h2{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:15px;}
+.intro-desc{font-size:0.95rem;color:var(--text-main);line-height:1.5;margin-bottom:25px;}
+.input-row{display:flex;gap:12px;margin-bottom:12px;}
+.input-group{flex:1;text-align:left;}
+label{display:block;font-size:0.65rem;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;font-weight:700;}
+input[type=number]{width:100%;padding:12px;background:#FAFAFA;border:1px solid #E6E6E6;border-radius:12px;font-size:1rem;font-weight:600;outline:none;text-align:center;transition:0.2s;}
+input[type=number]:focus{border-color:var(--accent-blue);background:#FFF;}
+.button-row{display:flex;gap:10px;margin-top:10px;}
+.btn-primary,.btn-secondary{flex:1;padding:16px;border-radius:14px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform 0.1s;border:none;text-align:center;}
+.btn-primary{background:var(--accent-blue);color:white;box-shadow:0 8px 20px rgba(52,116,240,0.2);}
+.btn-secondary{background:#EAEAEA;color:var(--text-sub);}
+.btn-primary:active,.btn-secondary:active{transform:scale(0.98);}
+.btn-back{background:none;border:none;color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;font-weight:700;margin-top:20px;cursor:pointer;letter-spacing:1px;align-self:flex-start;}
+.btn-back:hover{color:var(--text-main);}
+.btn-full{width:100%;margin-top:5px;}
+.center-hud{position:absolute;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;transition:transform 0.3s;}
+.hud-main{font-size:1.8rem;font-weight:500;color:var(--accent-blue);line-height:1;white-space:nowrap;transition:color 0.3s,font-size 0.5s ease,font-weight 0.5s ease,transform 0.5s ease;}
+.hud-main sub{font-size:0.6em;vertical-align:sub;margin-left:1px;}
+.hud-sub{font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:4px;text-transform:uppercase;transition:font-size 0.5s ease;}
+.top-watermark{position:absolute;top:-125px;left:50%;transform:translateX(-50%);width:300px;text-align:center;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(132,146,166,0.6);opacity:0;pointer-events:none;transition:opacity 0.3s ease;z-index:2;line-height:1;white-space:nowrap;}
+.top-watermark.active{opacity:1;}
+.top-label{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:300px;text-align:center;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--text-muted);opacity:0;transition:opacity 0.1s ease,color 0.3s ease;z-index:2;}
+.top-label.active{opacity:1;}
+.controls{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:15px;opacity:0;pointer-events:none;transition:opacity 0.5s;z-index:20;}
+.controls.active{opacity:1;pointer-events:all;}
+.btn-sm{padding:10px 25px;border-radius:30px;border:none;background:#E6E6E6;color:var(--text-sub);cursor:pointer;font-weight:600;font-size:0.8rem;}
+.btn-sm:hover{background:#dcdcdc;}
+.btn-red{background:#FFEBEE;color:#D32F2F;}
+.btn-extend{position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:white;border:1px solid #eee;color:var(--text-muted);font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:all 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
+.btn-extend.visible{opacity:1;pointer-events:all;}
+.btn-extend:hover{color:var(--accent-blue);border-color:var(--accent-blue);}
+.seq-indicator{position:fixed;top:18px;right:18px;z-index:20;background:var(--card-bg);border-radius:10px;padding:8px 14px;font-size:0.75rem;font-weight:700;color:var(--text-muted);box-shadow:0 2px 12px rgba(0,0,0,0.08);opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.seq-indicator.active{opacity:1;}
 
-        .menu-title {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            flex-shrink: 0;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            width: 90%;
-            max-width: 900px;
-        }
-
-        .menu-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; 
-            position: relative;
-        }
-        
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-        }
-        
-        .menu-card.clicked {
-            transform: scale(1.05);
-            box-shadow: 0 25px 60px rgba(52, 116, 240, 0.2);
-            z-index: 15;
-        }
-        
-        .menu-card-img {
-            width: 100%;
-            height: 130px;
-            object-fit: cover;
-            background: #eef1f6;
-        }
-
-        .menu-card-content {
-            padding: 20px;
-            flex: 1;
-        }
-
-        .menu-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
-        .menu-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-        @media (max-width: 600px) {
-            .menu-grid { grid-template-columns: 1fr; gap: 15px; }
-            .menu-card-img { height: 110px; }
-            .menu-card-content { padding: 15px; }
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(245, 247, 250, 0.85);
-            backdrop-filter: blur(4px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            z-index: 15;
-        }
-        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-
-        .modal-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, 40px) scale(0.95);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 20;
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
-            max-width: 90%;
-            width: 100%;
-        }
-        .modal-card.visible {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .intro-layout { display: flex; max-width: 750px; overflow: hidden; }
-        .intro-left { flex: 1; background: #f4f6f9; }
-        .intro-left img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .intro-right { flex: 1.2; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
-
-        @media (max-width: 700px) {
-            .intro-layout { flex-direction: column; }
-            .intro-left img { height: 200px; }
-            .intro-right { padding: 25px; }
-        }
-
-        .settings-layout { max-width: 400px; padding: 30px; text-align: center; }
-        h2 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
-        .intro-desc { font-size: 0.95rem; color: var(--text-main); line-height: 1.5; margin-bottom: 25px; }
-        
-        .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
-        .input-group { flex: 1; text-align: left; }
-        label { display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
-        input { width: 100%; padding: 12px; background: #FAFAFA; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 1rem; font-weight: 600; outline: none; text-align: center; transition: 0.2s; }
-        input:focus { border-color: var(--accent-blue); background: #FFF; }
-
-        .button-row { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-primary, .btn-secondary { flex: 1; padding: 16px; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.1s; border: none; text-align: center; }
-        .btn-primary { background: var(--accent-blue); color: white; box-shadow: 0 8px 20px rgba(52, 116, 240, 0.2); }
-        .btn-secondary { background: #EAEAEA; color: var(--text-sub); }
-        .btn-primary:active, .btn-secondary:active { transform: scale(0.98); }
-
-        .btn-back { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-top: 20px; cursor: pointer; letter-spacing: 1px; align-self: flex-start; }
-        .btn-back:hover { color: var(--text-main); }
-        .btn-full { width: 100%; margin-top: 5px; }
-
-        .center-hud { position: absolute; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; transition: transform 0.3s; }
-        .hud-main { font-size: 1.8rem; font-weight: 500; color: var(--accent-blue); line-height: 1; white-space: nowrap; transition: color 0.3s, font-size 0.5s ease, font-weight 0.5s ease, transform 0.5s ease; }
-        .hud-main sub { font-size: 0.6em; vertical-align: sub; margin-left: 1px; }
-        .hud-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; transition: font-size 0.5s ease; }
-
-        .top-watermark {
-            position: absolute;
-            top: -125px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(132, 146, 166, 0.6);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 2;
-            line-height: 1;
-            white-space: nowrap;
-        }
-        .top-watermark.active { opacity: 1; }
-
-        .top-label { 
-            position: absolute; 
-            top: -100px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px; 
-            text-align: center; 
-            font-size: 1.1rem; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            color: var(--text-muted); 
-            opacity: 0; 
-            transition: opacity 0.1s ease, color 0.3s ease; 
-            z-index: 2;
-        }
-        .top-label.active { opacity: 1; }
-
-        .controls { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 20; }
-        .controls.active { opacity: 1; pointer-events: all; }
-        .btn-sm { padding: 10px 25px; border-radius: 30px; border: none; background: #E6E6E6; color: var(--text-sub); cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-        .btn-sm:hover { background: #dcdcdc; }
-        .btn-red { background: #FFEBEE; color: #D32F2F; }
-        
-        .btn-extend { position: absolute; right: -50px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid #eee; color: var(--text-muted); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .btn-extend.visible { opacity: 1; pointer-events: all; }
-        .btn-extend:hover { color: var(--accent-blue); border-color: var(--accent-blue); }
-
-        /* Animations */
-        @keyframes heartbeat {
-            0% { transform: scale(0.85); }
-            10% { transform: scale(0.87); }
-            20% { transform: scale(0.85); }
-            100% { transform: scale(0.85); }
-        }
-        
-        @keyframes heartbeatBlueBig {
-            0% { transform: scale(1.8); box-shadow: 0 10px 30px rgba(52, 116, 240, 0.2); border-width: 10px; }
-            50% { transform: scale(2.1); box-shadow: 0 25px 70px rgba(52, 116, 240, 0.8); border-width: 2px; }
-            100% { transform: scale(1.8); box-shadow: 0 10px 30px rgba(52, 116, 240, 0.2); border-width: 10px; }
-        }
-
-        @keyframes pulseHoldBig {
-            0% { transform: scale(1.8); }
-            10% { transform: scale(1.83); }
-            20% { transform: scale(1.8); }
-            100% { transform: scale(1.8); }
-        }
-
-        @keyframes pulseHoldBox {
-            0% { transform: scale(1); }
-            10% { transform: scale(0.96); }
-            20% { transform: scale(1); }
-            100% { transform: scale(1); }
-        }
-
-        #dynamicStyles { display: none; }
-    </style>
+@keyframes heartbeat{0%{transform:scale(0.85);}10%{transform:scale(0.87);}20%{transform:scale(0.85);}100%{transform:scale(0.85);}}
+@keyframes heartbeatBlueBig{0%{transform:scale(1.8);box-shadow:0 10px 30px rgba(52,116,240,0.2);border-width:10px;}50%{transform:scale(2.1);box-shadow:0 25px 70px rgba(52,116,240,0.8);border-width:2px;}100%{transform:scale(1.8);box-shadow:0 10px 30px rgba(52,116,240,0.2);border-width:10px;}}
+@keyframes pulseHoldBig{0%{transform:scale(1.8);}10%{transform:scale(1.83);}20%{transform:scale(1.8);}100%{transform:scale(1.8);}}
+@keyframes pulseHoldBox{0%{transform:scale(1);}10%{transform:scale(0.96);}20%{transform:scale(1);}100%{transform:scale(1);}}
+#dynamicStyles{display:none;}
+</style>
 </head>
 <body>
-    <style id="dynamicStyles"></style>
-    <div class="modal-overlay" id="modalOverlay"></div>
+<style id="dynamicStyles"></style>
 
-    <div class="visualizer-layer mode-menu" id="visualizerLayer">
-        <div class="halo-wrapper" id="haloWrapper">
-            <div id="topWatermark" class="top-watermark"></div>
-            <div id="topLabel" class="top-label">INHALE</div>
-            <div class="halo-ring" id="haloRing"></div>
-            
-            <div class="box-path" id="boxPath">
-                <div class="box-dot" id="boxDot"></div>
-            </div>
+<button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()">
+  <span></span><span></span><span></span>
+</button>
+<div class="seq-indicator" id="seqIndicator"></div>
 
-            <svg id="nadiGraphic" class="nadi-graphic" viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg">
-                <path class="nose-line" d="M 21,12 C 18,25 9,30 9,42 C 9,50 17,52 21,46 C 19,44 15,44 14,47" />
-                <path class="nose-line" d="M 29,12 C 32,25 41,30 41,42 C 41,50 33,52 29,46 C 31,44 35,44 36,47" />
-                <path class="nose-line" d="M 19,48 C 22,53 28,53 31,48" />
-                <rect id="fingerLeft" class="finger" x="0" y="38" width="9" height="15" rx="4.5" />
-                <rect id="fingerRight" class="finger" x="41" y="38" width="9" height="15" rx="4.5" />
-            </svg>
-            
-            <div class="center-hud" id="centerHud">
-                <div class="hud-main" id="txtMain"><sub>2</sub></div>
-                <div class="hud-sub" id="txtSub">FLOW</div>
-            </div>
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <nav class="drawer-nav">
+    <button class="drawer-item active" id="navHome" onclick="navTo('home')">
+      <svg class="drawer-icon" viewBox="0 0 18 18" fill="none"><path d="M2 7.5L9 2l7 5.5V16H12v-4H6v4H2V7.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Home
+    </button>
+    <button class="drawer-item" id="navSession" onclick="navTo('session')">
+      <svg class="drawer-icon" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="3" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="7.5" width="14" height="3" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="12" width="14" height="3" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>Session
+    </button>
+    <button class="drawer-item" id="navStats" onclick="navTo('stats')">
+      <svg class="drawer-icon" viewBox="0 0 18 18" fill="none"><path d="M2 14V9m4 5V6m4 8V4m4 10V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Stats
+    </button>
+  </nav>
+</div>
 
-            <button class="btn-extend" id="btnExtend" onclick="extendTimer(event)">+15</button>
-        </div>
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<div class="visualizer-layer mode-menu" id="visualizerLayer">
+  <div class="halo-wrapper" id="haloWrapper">
+    <div id="topWatermark" class="top-watermark"></div>
+    <div id="topLabel" class="top-label">INHALE</div>
+    <div class="halo-ring" id="haloRing"></div>
+    <div class="box-path" id="boxPath"><div class="box-dot" id="boxDot"></div></div>
+    <svg id="nadiGraphic" class="nadi-graphic" viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg">
+      <path class="nose-line" d="M 21,12 C 18,25 9,30 9,42 C 9,50 17,52 21,46 C 19,44 15,44 14,47"/>
+      <path class="nose-line" d="M 29,12 C 32,25 41,30 41,42 C 41,50 33,52 29,46 C 31,44 35,44 36,47"/>
+      <path class="nose-line" d="M 19,48 C 22,53 28,53 31,48"/>
+      <rect id="fingerLeft" class="finger" x="0" y="38" width="9" height="15" rx="4.5"/>
+      <rect id="fingerRight" class="finger" x="41" y="38" width="9" height="15" rx="4.5"/>
+    </svg>
+    <div class="center-hud" id="centerHud">
+      <div class="hud-main" id="txtMain"><sub>2</sub></div>
+      <div class="hud-sub" id="txtSub">FLOW</div>
     </div>
+    <button class="btn-extend" id="btnExtend" onclick="extendTimer(event)">+15</button>
+  </div>
+</div>
 
-    <div class="menu-wrapper" id="menuWrapper">
-        <div class="menu-title">Select Technique</div>
-        <div class="menu-grid" id="menuGrid"></div>
+<!-- HOME -->
+<div class="menu-wrapper" id="menuWrapper">
+  <div class="menu-title">Select Technique</div>
+  <div class="menu-grid" id="menuGrid"></div>
+</div>
+
+<!-- SESSION -->
+<div class="session-view" id="sessionView">
+  <div class="menu-title" style="flex-shrink:0;">Build Session</div>
+  <div class="session-queue" id="sessionQueue"></div>
+  <div class="session-start-bar" style="margin-top:14px;">
+    <button class="btn-session-start" id="sessionStartBtn" onclick="startSessionQueue()" disabled>Begin Session</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-view" id="statsView">
+  <div class="stats-inner" id="statsInner"></div>
+</div>
+
+<!-- TECHNIQUE PICKER -->
+<div class="technique-picker" id="techniquePicker">
+  <div class="technique-picker-bg" onclick="closePicker()"></div>
+  <div class="technique-picker-sheet">
+    <div class="picker-title">Choose Technique</div>
+    <div class="picker-grid" id="pickerGrid"></div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="modal-card intro-layout" id="introPanel">
+  <div class="intro-left"><img id="introImage" src="" alt=""></div>
+  <div class="intro-right">
+    <h2 id="introTitle">How to perform</h2>
+    <div class="intro-desc" id="introDesc"></div>
+    <div id="wimHofQuickConfig" style="display:none;margin-bottom:20px;">
+      <div class="input-row" style="margin-bottom:0;">
+        <div class="input-group"><label>Rounds</label><input type="number" id="qWimRounds" value="3" min="1"></div>
+        <div class="input-group"><label>Retention (s)</label><input type="number" id="qWimHold" value="90" min="10"></div>
+      </div>
     </div>
-
-    <div class="modal-card intro-layout" id="introPanel">
-        <div class="intro-left">
-            <img id="introImage" src="" alt="Technique Illustration">
-        </div>
-        <div class="intro-right">
-            <h2 id="introTitle">How to perform</h2>
-            <div class="intro-desc" id="introDesc"></div>
-            
-            <div id="wimHofQuickConfig" style="display: none; margin-bottom: 20px;">
-                <div class="input-row" style="margin-bottom: 0;">
-                    <div class="input-group">
-                        <label>Rounds</label>
-                        <input type="number" id="qWimRounds" value="3" min="1">
-                    </div>
-                    <div class="input-group">
-                        <label>Retention (s)</label>
-                        <input type="number" id="qWimHold" value="90" min="10">
-                    </div>
-                </div>
-            </div>
-
-            <div class="button-row">
-                <button class="btn-primary" onclick="startSession()">Begin</button>
-                <button class="btn-secondary" onclick="goToSettings()">Customize</button>
-            </div>
-            <button class="btn-back" onclick="backToMenuFromIntro()">← Back to menu</button>
-        </div>
+    <div class="button-row">
+      <button class="btn-primary" onclick="startSession()">Begin</button>
+      <button class="btn-secondary" onclick="goToSettings()">Customize</button>
     </div>
+    <button class="btn-back" onclick="backToMenuFromIntro()">&#8592; Back to menu</button>
+  </div>
+</div>
 
-    <div class="modal-card settings-layout" id="settingsPanel">
-        <h2 id="settingsTitle">Configuration</h2>
-        
-        <div id="wimHofSettings" style="display:none;">
-            <div class="input-row">
-                <div class="input-group"><label>Total Rounds</label><input type="number" id="wTotalRounds" value="3" min="1"></div>
-                <div class="input-group"><label>Breaths</label><input type="number" id="wNbBreaths" value="30" min="1"></div>
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Inhale (s)</label><input type="number" id="wInhale" value="1.8" step="0.1"></div>
-                <div class="input-group"><label>Exhale (s)</label><input type="number" id="wExhale" value="1.8" step="0.1"></div>
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Retention (s)</label><input type="number" id="wHold" value="90"></div>
-                <div class="input-group"><label>Recover (s)</label><input type="number" id="wRecover" value="15"></div>
-            </div>
-        </div>
+<!-- SETTINGS -->
+<div class="modal-card settings-layout" id="settingsPanel">
+  <h2 id="settingsTitle">Configuration</h2>
+  <div id="wimHofSettings" style="display:none;">
+    <div class="input-row"><div class="input-group"><label>Total Rounds</label><input type="number" id="wTotalRounds" value="3" min="1"></div><div class="input-group"><label>Breaths</label><input type="number" id="wNbBreaths" value="30" min="1"></div></div>
+    <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="wInhale" value="1.8" step="0.1"></div><div class="input-group"><label>Exhale (s)</label><input type="number" id="wExhale" value="1.8" step="0.1"></div></div>
+    <div class="input-row"><div class="input-group"><label>Retention (s)</label><input type="number" id="wHold" value="90"></div><div class="input-group"><label>Recover (s)</label><input type="number" id="wRecover" value="15"></div></div>
+  </div>
+  <div id="boxSettings" style="display:none;">
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="bNbRounds" value="10"></div>
+    <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="bInhale" value="4"></div><div class="input-group"><label>Top Hold (s)</label><input type="number" id="bHoldTop" value="4"></div></div>
+    <div class="input-row"><div class="input-group"><label>Exhale (s)</label><input type="number" id="bExhale" value="4"></div><div class="input-group"><label>Bottom Hold (s)</label><input type="number" id="bHoldBottom" value="4"></div></div>
+  </div>
+  <div id="fiveSevenEightSettings" style="display:none;">
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="fNbRounds" value="4"></div>
+    <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="fInhale" value="5"></div><div class="input-group"><label>Hold (s)</label><input type="number" id="fHold" value="7"></div></div>
+    <div class="input-row"><div class="input-group"><label>Exhale (s)</label><input type="number" id="fExhale" value="8"></div></div>
+  </div>
+  <div id="basicSettings" style="display:none;">
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="cNbRounds" value="15"></div>
+    <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="cInhale" value="4" step="0.5"></div><div class="input-group"><label>Exhale (s)</label><input type="number" id="cExhale" value="6" step="0.5"></div></div>
+  </div>
+  <div id="meditationSettings" style="display:none;">
+    <div class="input-group" style="margin-bottom:15px;"><label>Duration (Minutes)</label><input type="number" id="mDuration" value="10" min="1"></div>
+  </div>
+  <button class="btn-primary btn-full" onclick="startSession()">Save &amp; Start</button>
+  <button class="btn-back" onclick="backToMenuFromSettings()">&#8592; Back</button>
+</div>
 
-        <div id="boxSettings" style="display:none;">
-            <div class="input-group" style="margin-bottom:15px;">
-                <label>Total Rounds</label>
-                <input type="number" id="bNbRounds" value="10">
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Inhale (s)</label><input type="number" id="bInhale" value="4"></div>
-                <div class="input-group"><label>Top Hold (s)</label><input type="number" id="bHoldTop" value="4"></div>
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Exhale (s)</label><input type="number" id="bExhale" value="4"></div>
-                <div class="input-group"><label>Bottom Hold (s)</label><input type="number" id="bHoldBottom" value="4"></div>
-            </div>
-        </div>
+<div class="controls" id="controls">
+  <button class="btn-sm btn-red" onclick="endSession()">Stop</button>
+  <button class="btn-sm" onclick="skipStep()">Skip</button>
+</div>
 
-        <div id="fiveSevenEightSettings" style="display:none;">
-            <div class="input-group" style="margin-bottom:15px;">
-                <label>Total Rounds</label>
-                <input type="number" id="fNbRounds" value="4">
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Inhale (s)</label><input type="number" id="fInhale" value="5"></div>
-                <div class="input-group"><label>Hold (s)</label><input type="number" id="fHold" value="7"></div>
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Exhale (s)</label><input type="number" id="fExhale" value="8"></div>
-            </div>
-        </div>
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const intros={
+  wimhof:{title:"Wim Hof",desc:"Deep cyclical breathing followed by an extended retention phase to reset the nervous system.",img:"Gemini_Generated_Image_czxzw5czxzw5czxz.png"},
+  box:{title:"Box Breathing",desc:"Four equal phases of breathing and holding to intensely focus the mind and calm nerves.",img:"Gemini_Generated_Image_.png"},
+  belly:{title:"Diaphragmatic",desc:"Focuses on using the diaphragm to lower heart rate and reduce blood pressure.",img:"Gemini_Generated_Image_(2).png"},
+  nadi:{title:"Alternate Nostril",desc:"A yogic technique alternating which nostril you breathe through to enhance balance.",img:"Gemini_Generated_Image_(1).png"},
+  fiveseveneight:{title:"5-7-8 Breathing",desc:"A powerful technique to relax the mind, slow the heart rate, and prepare for sleep.",img:"Gemini_Generated_Image_6drz746drz746drz.png"},
+  horse:{title:"Horse Stance",desc:"Deep, grounded breathing rooted in martial arts to build physical and mental resilience.",img:"Gemini_Generated_Image_8yrknp8yrknp8yrk.png"},
+  meditation:{title:"Meditation",desc:"A simple, unguided timer with a gentle chime to track silent mindfulness or meditation.",img:"Gemini_Generated_Image_placeholder_meditation.png"}
+};
+const defaultConfigs={
+  wimhof:{wimTotalRounds:1,rounds:30,inhale:1.8,exhale:1.8,hold:90,recover:15},
+  box:{rounds:1,boxInhale:4,boxHoldTop:4,boxExhale:4,boxHoldBottom:4},
+  belly:{rounds:1,inhale:4,exhale:6},
+  nadi:{rounds:1,inhale:4,exhale:4},
+  fiveseveneight:{rounds:1,fInhale:5,fHold:7,fExhale:8},
+  horse:{rounds:1,inhale:4,exhale:6},
+  meditation:{mDuration:1}
+};
+// Primary key per mode for the header stepper
+const primaryKey={wimhof:'wimTotalRounds',box:'rounds',belly:'rounds',nadi:'rounds',fiveseveneight:'rounds',horse:'rounds',meditation:'mDuration'};
+const primaryLabel={wimhof:'Rounds',box:'Rounds',belly:'Rounds',nadi:'Rounds',fiveseveneight:'Rounds',horse:'Rounds',meditation:'Min'};
 
-        <div id="basicSettings" style="display:none;">
-            <div class="input-group" style="margin-bottom:15px;">
-                <label>Total Rounds</label>
-                <input type="number" id="cNbRounds" value="15">
-            </div>
-            <div class="input-row">
-                <div class="input-group"><label>Inhale (s)</label><input type="number" id="cInhale" value="4" step="0.5"></div>
-                <div class="input-group"><label>Exhale (s)</label><input type="number" id="cExhale" value="6" step="0.5"></div>
-            </div>
-        </div>
+// ── STATS ─────────────────────────────────────────────────────────
+function loadStats(){try{return JSON.parse(localStorage.getItem('o2flow_stats')||'{"sessions":[],"lastDate":null,"streak":0}');}catch(e){return{sessions:[],lastDate:null,streak:0};}}
+function saveStats(s){try{localStorage.setItem('o2flow_stats',JSON.stringify(s));}catch(e){}}
+function recordSession(mode,durationMin){
+  const s=loadStats(),today=new Date().toDateString();
+  if(s.lastDate!==today){const y=new Date();y.setDate(y.getDate()-1);s.streak=(s.lastDate===y.toDateString())?s.streak+1:1;s.lastDate=today;}
+  s.sessions.unshift({mode,durationMin:Math.round(durationMin*10)/10,date:Date.now()});
+  if(s.sessions.length>50)s.sessions=s.sessions.slice(0,50);
+  saveStats(s);
+}
 
-        <div id="meditationSettings" style="display:none;">
-            <div class="input-group" style="margin-bottom:15px;">
-                <label>Duration (Minutes)</label>
-                <input type="number" id="mDuration" value="10" min="1">
-            </div>
-        </div>
+// ── PHASES ────────────────────────────────────────────────────────
+const PHASE_IDLE='idle',PHASE_ACTIVE='active',PHASE_WIM_BREATHING='w_breathing',PHASE_WIM_RETENTION='w_retention',PHASE_WIM_RECOVERY='w_recovery',PHASE_NADI='nadi_active',PHASE_578='578_active',PHASE_MEDITATION='meditation';
+let config={},activeMode='wimhof';
+let state={phase:PHASE_IDLE,breathCount:0,wimCurrentRound:1,nadiStep:0,timerVal:0,maxTimerVal:0,interval:null,textTimeout:null,phaseTimeout:null};
+let sessionStartTime=0,audioCtx;
+let sessionQueue=[],sessionQueueIndex=0,isSessionMode=false,currentView='home',pickerTargetSlot=-1;
 
-        <button class="btn-primary btn-full" onclick="startSession()">Save & Start</button>
-        <button class="btn-back" onclick="backToMenuFromSettings()">← Back</button>
+// ── NAV ───────────────────────────────────────────────────────────
+function toggleDrawer(){
+  const d=document.getElementById('drawer'),o=document.getElementById('drawerOverlay'),b=document.getElementById('hamburgerBtn');
+  const open=d.classList.toggle('open');o.classList.toggle('open',open);b.classList.toggle('open',open);
+}
+function closeDrawer(){['drawer','drawerOverlay'].forEach(id=>document.getElementById(id).classList.remove('open'));document.getElementById('hamburgerBtn').classList.remove('open');}
+function navTo(view){
+  closeDrawer();if(state.phase!==PHASE_IDLE)return;currentView=view;
+  ['home','session','stats'].forEach(v=>{document.getElementById('nav'+v[0].toUpperCase()+v.slice(1)).classList.toggle('active',v===view);});
+  document.getElementById('menuWrapper').classList.toggle('fade-out',view!=='home');
+  const sv=document.getElementById('sessionView');sv.classList.toggle('visible',view==='session');sv.classList.toggle('fade-out',view!=='session');
+  const stv=document.getElementById('statsView');stv.classList.toggle('visible',view==='stats');stv.classList.toggle('fade-out',view!=='stats');
+  if(view==='session')renderSessionQueue();if(view==='stats')renderStats();
+}
+
+// ── STATS RENDER ──────────────────────────────────────────────────
+function renderStats(){
+  const s=loadStats(),inner=document.getElementById('statsInner');
+  const totalMin=s.sessions.reduce((a,b)=>a+(b.durationMin||0),0);
+  const counts={};s.sessions.forEach(sess=>{counts[sess.mode]=(counts[sess.mode]||0)+1;});
+  const maxCount=Math.max(1,...Object.values(counts));
+  const modes=Object.keys(intros);
+  const rs=200,cx=rs/2,cy=rs/2,r=72;
+  const pts=modes.map((m,i)=>{const a=(2*Math.PI*i/modes.length)-Math.PI/2,rad=r*(0.15+0.85*((counts[m]||0)/maxCount));return[cx+rad*Math.cos(a),cy+rad*Math.sin(a)];});
+  const axes=modes.map((m,i)=>{const a=(2*Math.PI*i/modes.length)-Math.PI/2,lx=cx+(r+20)*Math.cos(a),ly=cy+(r+20)*Math.sin(a),ex=cx+r*Math.cos(a),ey=cy+r*Math.sin(a),anchor=Math.abs(Math.cos(a))<0.1?'middle':Math.cos(a)>0?'start':'end';return`<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#E8ECF2" stroke-width="1"/><text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="${anchor}" font-size="9" fill="#8492a6" font-family="-apple-system,sans-serif" font-weight="600">${intros[m].title.split(' ')[0]}</text>`;}).join('');
+  const grid=[0.33,0.66,1].map(f=>`<circle cx="${cx}" cy="${cy}" r="${(r*f).toFixed(1)}" fill="none" stroke="#EEF0F4" stroke-width="1"/>`).join('');
+  const radarSVG=`<svg width="${rs}" height="${rs}" viewBox="0 0 ${rs} ${rs}">${grid}${axes}<polygon points="${pts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')}" fill="rgba(52,116,240,0.15)" stroke="#3474F0" stroke-width="2" stroke-linejoin="round"/>${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="#3474F0"/>`).join('')}</svg>`;
+  const bars=[...modes].sort((a,b)=>(counts[b]||0)-(counts[a]||0)).map(m=>{const c=counts[m]||0,pct=Math.round((c/maxCount)*100);return`<div class="bar-item"><div class="bar-label">${intros[m].title}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-count">${c}</div></div>`;}).join('');
+  const histHTML=s.sessions.length===0?`<div class="empty-state">No sessions yet.<br>Complete your first exercise to see history here.</div>`:s.sessions.slice(0,8).map(sess=>{const d=new Date(sess.date).toLocaleDateString(undefined,{month:'short',day:'numeric'});return`<div class="history-item"><div class="history-dot"></div><div class="history-name">${intros[sess.mode]?.title||sess.mode}</div><div class="history-meta">${d} &middot; ${sess.durationMin} min</div></div>`;}).join('');
+  inner.innerHTML=`<div class="stat-cards-row"><div class="stat-card"><div class="stat-streak-fire">&#128293;</div><div class="stat-card-val">${s.streak}</div><div class="stat-card-label">Day Streak</div></div><div class="stat-card"><div class="stat-card-val">${s.sessions.length}</div><div class="stat-card-label">Sessions</div></div><div class="stat-card"><div class="stat-card-val">${Math.round(totalMin)}</div><div class="stat-card-label">Minutes</div></div></div><div class="chart-card"><div class="chart-card-title">Technique Balance</div><div class="radar-wrap">${radarSVG}</div></div><div class="chart-card"><div class="chart-card-title">Sessions by Technique</div><div class="bar-list">${bars}</div></div><div class="chart-card"><div class="chart-card-title">Recent Sessions</div><div class="history-list">${histHTML}</div></div>`;
+}
+
+// ── SESSION QUEUE ─────────────────────────────────────────────────
+function renderSessionQueue(){
+  const q=document.getElementById('sessionQueue');q.innerHTML='';
+  sessionQueue.forEach((slot,i)=>{const el=document.createElement('div');el.className='queue-slot';el.id=`slot-${i}`;el.innerHTML=buildSlotHTML(slot,i);q.appendChild(el);});
+  if(sessionQueue.length<3){const add=document.createElement('button');add.className='add-slot-btn';add.innerHTML='<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Exercise';add.onclick=()=>openPicker(sessionQueue.length);q.appendChild(add);}
+  document.getElementById('sessionStartBtn').disabled=sessionQueue.length===0;
+}
+
+function mkStepper(i,key,label,val,min,max,step){
+  step=step||1;
+  return `<div class="stepper-item"><label>${label}</label><div class="stepper-ctrl"><button onclick="adjustSlot(${i},'${key}',${-step},${min},${max})">&#8722;</button><div class="stepper-val" id="sv_${i}_${key}">${val}</div><button onclick="adjustSlot(${i},'${key}',${step},${min},${max})">&#43;</button></div></div>`;
+}
+
+function buildSlotHTML(slot,i){
+  const cfg=slot.config,mode=slot.mode;
+  const pk=primaryKey[mode],pl=primaryLabel[mode],pv=cfg[pk];
+  // Extra params (expand panel)
+  let extra='';
+  if(mode==='wimhof') extra=`${mkStepper(i,'rounds','Breaths/Round',cfg.rounds,5,100,5)}${mkStepper(i,'inhale','Inhale (s)',cfg.inhale,1,10)}${mkStepper(i,'exhale','Exhale (s)',cfg.exhale,1,10)}${mkStepper(i,'hold','Retention (s)',cfg.hold,10,300,10)}${mkStepper(i,'recover','Recover (s)',cfg.recover,5,120,5)}`;
+  else if(mode==='box') extra=`${mkStepper(i,'boxInhale','Inhale (s)',cfg.boxInhale,1,20)}${mkStepper(i,'boxHoldTop','Hold Top (s)',cfg.boxHoldTop,1,20)}${mkStepper(i,'boxExhale','Exhale (s)',cfg.boxExhale,1,20)}${mkStepper(i,'boxHoldBottom','Hold Bottom (s)',cfg.boxHoldBottom,1,20)}`;
+  else if(mode==='fiveseveneight') extra=`${mkStepper(i,'fInhale','Inhale (s)',cfg.fInhale,1,20)}${mkStepper(i,'fHold','Hold (s)',cfg.fHold,1,30)}${mkStepper(i,'fExhale','Exhale (s)',cfg.fExhale,1,30)}`;
+  else if(mode!=='meditation') extra=`${mkStepper(i,'inhale','Inhale (s)',cfg.inhale,1,20)}${mkStepper(i,'exhale','Exhale (s)',cfg.exhale,1,30)}`;
+  return `<div class="queue-slot-header">
+    <div class="slot-number">${i+1}</div>
+    <div class="slot-info"><div class="slot-title">${intros[mode].title}</div></div>
+    <div class="slot-rounds">
+      <button class="slot-rounds-btn" onclick="adjustSlotPrimary(${i},-1)">&#8722;</button>
+      <div class="slot-rounds-val" id="prv_${i}">${pv}</div>
+      <button class="slot-rounds-btn" onclick="adjustSlotPrimary(${i},1)">&#43;</button>
+      <div class="slot-rounds-label">${pl}</div>
     </div>
-
-    <div class="controls" id="controls">
-        <button class="btn-sm btn-red" onclick="endSession()">Stop</button>
-        <button class="btn-sm" onclick="skipStep()">Skip</button>
+    <div class="slot-actions">
+      ${extra?`<button class="slot-btn" onclick="toggleSlotExpand(${i})" title="More settings">&#x22EF;</button>`:''}
+      <button class="slot-btn" onclick="swapSlot(${i})" title="Change">&#x21C4;</button>
+      <button class="slot-btn remove" onclick="removeSlot(${i})">&#x2715;</button>
     </div>
+  </div>
+  ${extra?`<div class="slot-expand" id="expand-${i}"><div class="stepper-row">${extra}</div></div>`:''}`;
+}
 
-    <script>
-        const intros = {
-            wimhof: { title: "Wim Hof", desc: "Deep cyclical breathing followed by an extended retention phase to reset the nervous system.", img: "Gemini_Generated_Image_czxzw5czxzw5czxz.png" },
-            box: { title: "Box Breathing", desc: "Four equal phases of breathing and holding to intensely focus the mind and calm nerves.", img: "Gemini_Generated_Image_.png" },
-            belly: { title: "Diaphragmatic", desc: "Focuses on using the diaphragm to lower heart rate and reduce blood pressure.", img: "Gemini_Generated_Image_(2).png" },
-            nadi: { title: "Alternate Nostril", desc: "A yogic technique alternating which nostril you breathe through to enhance balance.", img: "Gemini_Generated_Image_(1).png" },
-            fiveseveneight: { title: "5-7-8 Breathing", desc: "A powerful technique to relax the mind, slow the heart rate, and prepare for sleep.", img: "Gemini_Generated_Image_6drz746drz746drz.png" },
-            horse: { title: "Horse Stance", desc: "Deep, grounded breathing rooted in martial arts to build physical and mental resilience.", img: "Gemini_Generated_Image_8yrknp8yrknp8yrk.png" },
-            meditation: { title: "Meditation", desc: "A simple, unguided timer with a gentle chime to track silent mindfulness or meditation.", img: "Gemini_Generated_Image_placeholder_meditation.png" }
-        };
+function adjustSlotPrimary(i,delta){
+  const mode=sessionQueue[i].mode,pk=primaryKey[mode];
+  const min=mode==='meditation'?1:1,max=mode==='meditation'?120:30;
+  let v=sessionQueue[i].config[pk]+delta;
+  v=Math.max(min,Math.min(max,v));
+  sessionQueue[i].config[pk]=v;
+  const el=document.getElementById(`prv_${i}`);
+  if(el)el.textContent=v;
+  // keep stepper-val in sync if expand open
+  const sv=document.getElementById(`sv_${i}_${pk}`);
+  if(sv)sv.textContent=v;
+}
+function adjustSlot(i,key,delta,min,max){
+  let v=sessionQueue[i].config[key]+delta;v=Math.max(min,Math.min(max,Math.round(v*10)/10));
+  sessionQueue[i].config[key]=v;
+  const el=document.getElementById(`sv_${i}_${key}`);if(el)el.textContent=v;
+  // sync primary display if key is primary
+  if(key===primaryKey[sessionQueue[i].mode]){const pv=document.getElementById(`prv_${i}`);if(pv)pv.textContent=v;}
+}
+function toggleSlotExpand(i){document.getElementById(`expand-${i}`)?.classList.toggle('open');}
+function removeSlot(i){sessionQueue.splice(i,1);renderSessionQueue();}
+function swapSlot(i){pickerTargetSlot=i;openPicker(-1,true);}
+function openPicker(afterIndex,isSwap=false){
+  if(!isSwap)pickerTargetSlot=afterIndex;
+  const pg=document.getElementById('pickerGrid');pg.innerHTML='';
+  Object.entries(intros).forEach(([mode,data])=>{const d=document.createElement('div');d.className='picker-option';d.innerHTML=`<h4>${data.title}</h4><p>${data.desc.substring(0,60)}&#8230;</p>`;d.onclick=()=>selectTechnique(mode,isSwap);pg.appendChild(d);});
+  document.getElementById('techniquePicker').classList.add('open');
+}
+function closePicker(){document.getElementById('techniquePicker').classList.remove('open');}
+function selectTechnique(mode,isSwap){
+  const cfg=JSON.parse(JSON.stringify(defaultConfigs[mode]||{rounds:1,inhale:4,exhale:6}));
+  if(isSwap)sessionQueue[pickerTargetSlot]={mode,config:cfg};else sessionQueue.push({mode,config:cfg});
+  closePicker();renderSessionQueue();
+}
 
-        const PHASE_IDLE = 'idle', PHASE_ACTIVE = 'active', PHASE_WIM_BREATHING = 'w_breathing', PHASE_WIM_RETENTION = 'w_retention', PHASE_WIM_RECOVERY = 'w_recovery', PHASE_NADI = 'nadi_active', PHASE_578 = '578_active', PHASE_MEDITATION = 'meditation';
+function startSessionQueue(){
+  if(sessionQueue.length===0)return;isSessionMode=true;sessionQueueIndex=0;
+  document.getElementById('sessionView').classList.remove('visible');document.getElementById('sessionView').classList.add('fade-out');
+  runNextInQueue();
+}
+function runNextInQueue(){
+  if(sessionQueueIndex>=sessionQueue.length){isSessionMode=false;updateSeqIndicator(false);endSession();return;}
+  const slot=sessionQueue[sessionQueueIndex];activeMode=slot.mode;config=JSON.parse(JSON.stringify(slot.config));
+  updateSeqIndicator(true);launchMode();
+}
+function updateSeqIndicator(show){
+  const el=document.getElementById('seqIndicator');
+  if(!show||!isSessionMode){el.classList.remove('active');return;}
+  el.textContent=`${sessionQueueIndex+1} / ${sessionQueue.length}`;el.classList.add('active');
+}
 
-        let config = {}, activeMode = 'wimhof', state = { phase: PHASE_IDLE, breathCount: 0, wimCurrentRound: 1, nadiStep: 0, timerVal: 0, maxTimerVal: 0, interval: null, textTimeout: null, phaseTimeout: null };
+// ── AUDIO ─────────────────────────────────────────────────────────
+function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();}
+function playChime(){
+  ensureAudio();
+  const o1=audioCtx.createOscillator(),o2=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o1.type='sine';o1.frequency.setValueAtTime(432,audioCtx.currentTime);o2.type='sine';o2.frequency.setValueAtTime(436,audioCtx.currentTime);
+  g.gain.setValueAtTime(0,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0.6,audioCtx.currentTime+0.05);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+3);
+  o1.connect(g);o2.connect(g);g.connect(audioCtx.destination);o1.start();o2.start();o1.stop(audioCtx.currentTime+3);o2.stop(audioCtx.currentTime+3);
+}
 
-        // Audio Context setup for the chime
-        let audioCtx;
+// ── DOM REFS ──────────────────────────────────────────────────────
+const els={
+  visualizerLayer:document.getElementById('visualizerLayer'),menuWrapper:document.getElementById('menuWrapper'),menuGrid:document.getElementById('menuGrid'),
+  modalOverlay:document.getElementById('modalOverlay'),introPanel:document.getElementById('introPanel'),settingsPanel:document.getElementById('settingsPanel'),
+  wimHofSettings:document.getElementById('wimHofSettings'),boxSettings:document.getElementById('boxSettings'),fiveSevenEightSettings:document.getElementById('fiveSevenEightSettings'),
+  basicSettings:document.getElementById('basicSettings'),meditationSettings:document.getElementById('meditationSettings'),
+  introTitle:document.getElementById('introTitle'),introDesc:document.getElementById('introDesc'),introImage:document.getElementById('introImage'),settingsTitle:document.getElementById('settingsTitle'),
+  halo:document.getElementById('haloRing'),boxPath:document.getElementById('boxPath'),boxDot:document.getElementById('boxDot'),nadiGraphic:document.getElementById('nadiGraphic'),
+  centerHud:document.getElementById('centerHud'),txtMain:document.getElementById('txtMain'),txtSub:document.getElementById('txtSub'),
+  topLabel:document.getElementById('topLabel'),topWatermark:document.getElementById('topWatermark'),controls:document.getElementById('controls'),
+  btnExtend:document.getElementById('btnExtend'),styleSheet:document.getElementById('dynamicStyles')
+};
 
-        function playChime() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+function renderMenu(){
+  els.menuGrid.innerHTML='';
+  for(const [mode,data] of Object.entries(intros)){
+    const card=document.createElement('div');card.className='menu-card';card.onclick=()=>handleCardClick(card,mode);
+    card.innerHTML=`<img class="menu-card-img" src="${data.img}" alt="${data.title}"><div class="menu-card-content"><h3>${data.title}</h3><p>${data.desc}</p></div>`;
+    els.menuGrid.appendChild(card);
+  }
+}
+function handleCardClick(c,mode){c.classList.add('clicked');setTimeout(()=>{c.classList.remove('clicked');openIntro(mode);},250);}
+renderMenu();
 
-            const osc1 = audioCtx.createOscillator();
-            const osc2 = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+document.getElementById('qWimRounds').addEventListener('input',e=>document.getElementById('wTotalRounds').value=e.target.value);
+document.getElementById('wTotalRounds').addEventListener('input',e=>document.getElementById('qWimRounds').value=e.target.value);
+document.getElementById('qWimHold').addEventListener('input',e=>document.getElementById('wHold').value=e.target.value);
+document.getElementById('wHold').addEventListener('input',e=>document.getElementById('qWimHold').value=e.target.value);
 
-            osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(432, audioCtx.currentTime); // Healing frequency
-            
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(436, audioCtx.currentTime); // Slight detune for bell effect
+function setText(el,val,color){const next=String(val).trim();if(el.innerHTML.trim()===next){if(color!==undefined)el.style.color=color;return;}el.innerHTML=next;if(color!==undefined)el.style.color=color;}
 
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + 0.05); // Attack
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3); // Long release
+function openIntro(mode){
+  activeMode=mode;els.introTitle.innerText=intros[mode].title;els.introDesc.innerText=intros[mode].desc;
+  if(intros[mode].img)els.introImage.src=intros[mode].img;
+  document.getElementById('wimHofQuickConfig').style.display=mode==='wimhof'?'block':'none';
+  els.modalOverlay.classList.add('visible');els.menuWrapper.classList.add('fade-out');
+  setTimeout(()=>els.introPanel.classList.add('visible'),100);
+}
+function backToMenuFromIntro(){
+  els.introPanel.classList.remove('visible');
+  setTimeout(()=>{els.modalOverlay.classList.remove('visible');if(currentView==='home')els.menuWrapper.classList.remove('fade-out');else{document.getElementById('sessionView').classList.add('visible');document.getElementById('sessionView').classList.remove('fade-out');}},300);
+}
+function goToSettings(){
+  els.introPanel.classList.remove('visible');
+  ['wimHofSettings','boxSettings','fiveSevenEightSettings','basicSettings','meditationSettings'].forEach(id=>document.getElementById(id).style.display='none');
+  if(activeMode==='wimhof')els.wimHofSettings.style.display='block';else if(activeMode==='box')els.boxSettings.style.display='block';else if(activeMode==='fiveseveneight')els.fiveSevenEightSettings.style.display='block';else if(activeMode==='meditation')els.meditationSettings.style.display='block';else els.basicSettings.style.display='block';
+  els.settingsTitle.innerText=intros[activeMode].title+' Config';setTimeout(()=>els.settingsPanel.classList.add('visible'),300);
+}
+function backToMenuFromSettings(){els.settingsPanel.classList.remove('visible');setTimeout(()=>els.introPanel.classList.add('visible'),300);}
 
-            osc1.connect(gainNode);
-            osc2.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+function startSession(){
+  ensureAudio();
+  if(activeMode==='wimhof'){config.wimTotalRounds=parseInt(document.getElementById('wTotalRounds').value)||1;config.rounds=parseInt(document.getElementById('wNbBreaths').value);config.inhale=parseFloat(document.getElementById('wInhale').value);config.exhale=parseFloat(document.getElementById('wExhale').value);config.hold=parseInt(document.getElementById('wHold').value);config.recover=parseInt(document.getElementById('wRecover').value);state.wimCurrentRound=1;}
+  else if(activeMode==='box'){config.rounds=parseInt(document.getElementById('bNbRounds').value);config.boxInhale=parseFloat(document.getElementById('bInhale').value);config.boxHoldTop=parseFloat(document.getElementById('bHoldTop').value);config.boxExhale=parseFloat(document.getElementById('bExhale').value);config.boxHoldBottom=parseFloat(document.getElementById('bHoldBottom').value);}
+  else if(activeMode==='fiveseveneight'){config.rounds=parseInt(document.getElementById('fNbRounds').value);config.fInhale=parseFloat(document.getElementById('fInhale').value);config.fHold=parseFloat(document.getElementById('fHold').value);config.fExhale=parseFloat(document.getElementById('fExhale').value);}
+  else if(activeMode==='meditation'){config.mDuration=parseInt(document.getElementById('mDuration').value);}
+  else{config.rounds=parseInt(document.getElementById('cNbRounds').value);config.inhale=parseFloat(document.getElementById('cInhale').value);config.exhale=parseFloat(document.getElementById('cExhale').value);}
+  launchMode();
+}
 
-            osc1.start();
-            osc2.start();
-            osc1.stop(audioCtx.currentTime + 3);
-            osc2.stop(audioCtx.currentTime + 3);
-        }
+function launchMode(){
+  ensureAudio();
+  if(activeMode==='wimhof'){if(!config.wimTotalRounds)config.wimTotalRounds=1;state.wimCurrentRound=1;}
+  if(activeMode==='box'){els.boxPath.classList.add('active');els.halo.style.opacity='0';}
+  else{els.boxPath.classList.remove('active');els.halo.style.opacity='1';if(activeMode!=='fiveseveneight'&&activeMode!=='meditation')generateKeyframes(config.inhale,config.exhale);if(activeMode==='nadi')els.nadiGraphic.classList.add('visible');}
+  els.introPanel.classList.remove('visible');els.settingsPanel.classList.remove('visible');els.modalOverlay.classList.remove('visible');
+  els.menuWrapper.classList.add('fade-out');els.visualizerLayer.classList.remove('mode-menu');els.visualizerLayer.classList.add('mode-session');
+  setText(els.txtMain,"Start","");setText(els.txtSub,activeMode==='meditation'?"Focus":"Breathing");
+  if(activeMode==='nadi')els.centerHud.style.transform="translateY(25px)";
+  sessionStartTime=Date.now();
+  setTimeout(()=>{
+    if(activeMode==='wimhof')startWimHof();else if(activeMode==='box')startBoxBreathing();else if(activeMode==='belly')startBellyBreathing();
+    else if(activeMode==='nadi')startNadiBreathing();else if(activeMode==='fiveseveneight')startFiveSevenEight();
+    else if(activeMode==='horse')startHorseStance();else if(activeMode==='meditation')startMeditation();
+  },800);
+}
 
-        const els = {
-            visualizerLayer: document.getElementById('visualizerLayer'),
-            menuWrapper: document.getElementById('menuWrapper'),
-            menuGrid: document.getElementById('menuGrid'),
-            modalOverlay: document.getElementById('modalOverlay'),
-            introPanel: document.getElementById('introPanel'),
-            settingsPanel: document.getElementById('settingsPanel'),
-            wimHofSettings: document.getElementById('wimHofSettings'),
-            boxSettings: document.getElementById('boxSettings'),
-            fiveSevenEightSettings: document.getElementById('fiveSevenEightSettings'),
-            basicSettings: document.getElementById('basicSettings'),
-            meditationSettings: document.getElementById('meditationSettings'),
-            introTitle: document.getElementById('introTitle'),
-            introDesc: document.getElementById('introDesc'),
-            introImage: document.getElementById('introImage'),
-            settingsTitle: document.getElementById('settingsTitle'),
-            halo: document.getElementById('haloRing'),
-            boxPath: document.getElementById('boxPath'),
-            boxDot: document.getElementById('boxDot'),
-            nadiGraphic: document.getElementById('nadiGraphic'),
-            centerHud: document.getElementById('centerHud'),
-            txtMain: document.getElementById('txtMain'),
-            txtSub: document.getElementById('txtSub'),
-            topLabel: document.getElementById('topLabel'),
-            topWatermark: document.getElementById('topWatermark'),
-            controls: document.getElementById('controls'),
-            btnExtend: document.getElementById('btnExtend'),
-            styleSheet: document.getElementById('dynamicStyles')
-        };
+function endSession(){
+  stopAllLogic();resetHaloToIdle();
+  els.controls.classList.remove('active');els.btnExtend.classList.remove('visible');els.topLabel.classList.remove('active');
+  updateSeqIndicator(false);els.visualizerLayer.classList.remove('mode-session');els.visualizerLayer.classList.add('mode-menu');isSessionMode=false;
+  setTimeout(()=>{
+    if(currentView==='session'){document.getElementById('sessionView').classList.add('visible');document.getElementById('sessionView').classList.remove('fade-out');}
+    else if(currentView==='stats'){document.getElementById('statsView').classList.add('visible');document.getElementById('statsView').classList.remove('fade-out');renderStats();}
+    else els.menuWrapper.classList.remove('fade-out');
+  },500);
+}
 
-        function renderMenu() {
-            els.menuGrid.innerHTML = '';
-            for (const [mode, data] of Object.entries(intros)) {
-                const card = document.createElement('div');
-                card.className = 'menu-card';
-                card.onclick = () => handleCardClick(card, mode);
-                card.innerHTML = `
-                    <img class="menu-card-img" src="${data.img}" alt="${data.title}">
-                    <div class="menu-card-content">
-                        <h3>${data.title}</h3>
-                        <p>${data.desc}</p>
-                    </div>
-                `;
-                els.menuGrid.appendChild(card);
-            }
-        }
+// ── SKIP — fixed: no stopAllLogic before branching ────────────────
+function skipStep(){
+  const cp=state.phase;
+  // targeted cleanup only — do NOT call stopAllLogic (it would clobber state.phase)
+  if(state.interval){clearInterval(state.interval);state.interval=null;}
+  if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
+  if(state.phaseTimeout){clearTimeout(state.phaseTimeout);state.phaseTimeout=null;}
+  els.halo.style.animation='none';
+  els.boxPath.style.animation='none';
+  els.halo.removeEventListener('animationiteration',wimHofIteration);
+  els.halo.removeEventListener('animationiteration',bellyIteration);
+  els.halo.removeEventListener('animationiteration',nadiIteration);
+  els.halo.removeEventListener('animationiteration',horseIteration);
+  els.topWatermark.classList.remove('active');
 
-        function handleCardClick(cardElement, mode) {
-            cardElement.classList.add('clicked');
-            setTimeout(() => {
-                cardElement.classList.remove('clicked');
-                openIntro(mode);
-            }, 250);
-        }
+  if(activeMode==='wimhof'){
+    if(cp===PHASE_WIM_BREATHING){playChime();startRetentionPhase();}
+    else if(cp===PHASE_WIM_RETENTION){playChime();els.btnExtend.classList.remove('visible');startRecoveryPhase();}
+    else if(cp===PHASE_WIM_RECOVERY){
+      playChime();
+      if(state.wimCurrentRound<config.wimTotalRounds){state.wimCurrentRound++;startWimHof();}else finishRound();
+    }
+  } else {
+    finishRound();
+  }
+}
 
-        renderMenu();
+function generateKeyframes(inhale,exhale){const t=inhale+exhale,ip=(inhale/t)*100;els.styleSheet.innerText=`@keyframes breatheCycle{0%{transform:scale(1);border-width:20px;}${ip}%{transform:scale(1.8);border-width:10px;}100%{transform:scale(1);border-width:20px;}}`;}
 
-        document.getElementById('qWimRounds').addEventListener('input', e => document.getElementById('wTotalRounds').value = e.target.value);
-        document.getElementById('wTotalRounds').addEventListener('input', e => document.getElementById('qWimRounds').value = e.target.value);
-        document.getElementById('qWimHold').addEventListener('input', e => document.getElementById('wHold').value = e.target.value);
-        document.getElementById('wHold').addEventListener('input', e => document.getElementById('qWimHold').value = e.target.value);
+// ── WIM HOF ───────────────────────────────────────────────────────
+function startWimHof(){
+  state.phase=PHASE_WIM_BREATHING;state.breathCount=1;
+  els.controls.classList.add('active');els.topLabel.classList.add('active');els.topWatermark.classList.add('active');
+  setText(els.txtSub,"Breaths");setText(els.txtMain,`1 / ${config.rounds}`,"");
+  els.halo.style.animation="none";els.halo.style.transition="transform 0.8s cubic-bezier(0.25,1,0.5,1),border-color 0.8s ease,border-width 0.8s ease";
+  els.halo.style.transform="scale(1)";els.halo.style.borderWidth="20px";els.halo.style.borderColor="var(--halo-breathing)";
+  setTimeout(()=>{
+    if(state.phase!==PHASE_WIM_BREATHING)return;
+    els.halo.style.transition="none";
+    els.halo.style.animation=`breatheCycle ${config.inhale+config.exhale}s ease-in-out infinite`;
+    els.halo.addEventListener('animationiteration',wimHofIteration);
+    cycleWimHofText();
+  },800);
+}
+function cycleWimHofText(){
+  if(state.phase!==PHASE_WIM_BREATHING)return;
+  els.topWatermark.innerText=`Round ${state.wimCurrentRound}`;setText(els.topLabel,"INHALE","var(--text-main)");
+  state.textTimeout=setTimeout(()=>{if(state.phase===PHASE_WIM_BREATHING)setText(els.topLabel,"EXHALE","var(--text-muted)");},config.inhale*1000);
+}
+function wimHofIteration(){
+  if(state.phase!==PHASE_WIM_BREATHING)return;
+  if(state.breathCount<config.rounds){state.breathCount++;setText(els.txtMain,`${state.breathCount} / ${config.rounds}`);cycleWimHofText();}
+  else{els.halo.removeEventListener('animationiteration',wimHofIteration);playChime();startRetentionPhase();}
+}
 
-        function setText(el, val, color) {
-            let current = el.innerHTML.trim(), next = String(val).trim();
-            if (current === next) { 
-                if (color !== undefined) el.style.color = color; 
-                return; 
-            }
-            el.innerHTML = next;
-            if (color !== undefined) el.style.color = color;
-        }
+function startRetentionPhase(){
+  state.phase=PHASE_WIM_RETENTION;state.timerVal=config.hold;state.maxTimerVal=config.hold;
+  if(state.textTimeout)clearTimeout(state.textTimeout);
+  els.halo.style.animation='none';void els.halo.offsetWidth;
+  setText(els.topLabel,"HOLD BREATH","var(--text-muted)");setText(els.txtSub,"Retention");
+  els.halo.style.transition="transform 2.0s cubic-bezier(0.25,1,0.5,1),border-color 1s ease";
+  requestAnimationFrame(()=>{els.halo.style.transform="scale(0.85)";els.halo.style.borderColor="var(--halo-hold)";els.halo.style.borderWidth="20px";});
+  setTimeout(()=>{if(state.phase===PHASE_WIM_RETENTION)els.halo.style.animation="heartbeat 1.5s ease-in-out infinite";},2000);
+  setText(els.txtMain,formatTime(state.timerVal),"");els.btnExtend.classList.add('visible');
+  state.interval=setInterval(()=>{
+    const p=1-(state.timerVal/state.maxTimerVal);
+    setText(els.txtMain,formatTime(state.timerVal),`rgb(${Math.floor(52+(19-52)*p)},${Math.floor(116+(19-116)*p)},${Math.floor(240+(19-240)*p)})`);
+    els.halo.style.borderColor=`rgb(${Math.floor(94+(211-94)*p)},${Math.floor(107+(47-107)*p)},${Math.floor(124+(47-124)*p)})`;
+    if(--state.timerVal<0){clearInterval(state.interval);state.interval=null;playChime();els.btnExtend.classList.remove('visible');startRecoveryPhase();}
+  },1000);
+}
+function extendTimer(e){e.stopPropagation();state.timerVal+=15;state.maxTimerVal+=15;setText(els.txtMain,formatTime(state.timerVal));}
 
-        function openIntro(mode) {
-            activeMode = mode;
-            els.introTitle.innerText = intros[mode].title;
-            els.introDesc.innerText = intros[mode].desc;
-            if (intros[mode].img) els.introImage.src = intros[mode].img;
-            document.getElementById('wimHofQuickConfig').style.display = mode === 'wimhof' ? 'block' : 'none';
-            els.modalOverlay.classList.add('visible');
-            els.menuWrapper.classList.add('fade-out');
-            setTimeout(() => els.introPanel.classList.add('visible'), 100);
-        }
+function startRecoveryPhase(){
+  state.phase=PHASE_WIM_RECOVERY;
+  // Reset halo then animate to expanded blue
+  els.halo.style.animation='none';void els.halo.offsetWidth;
+  setTimeout(()=>{
+    els.halo.style.transition="transform 1.0s cubic-bezier(0.25,1,0.5,1),border-color 1s linear,border-width 1s linear";
+    els.halo.style.transform="scale(1.8)";els.halo.style.borderWidth="10px";
+    // Start grey (hold color), animate to blue — no red
+    els.halo.style.borderColor="rgb(94,107,124)";
+    setTimeout(()=>{if(state.phase===PHASE_WIM_RECOVERY)els.halo.style.animation="heartbeatBlueBig 1.5s ease-in-out infinite";},1000);
+  },50);
+  setText(els.topLabel,"INHALE & HOLD","var(--accent-blue)");setText(els.txtSub,"Recovery");
+  let rTimer=config.recover;const maxRTimer=config.recover;
+  setText(els.txtMain,`${rTimer}s`,"rgb(94,107,124)");
+  state.interval=setInterval(()=>{
+    rTimer--;
+    const p=1-(Math.max(0,rTimer)/maxRTimer);
+    // Text: grey → blue
+    const tr=Math.floor(94+(52-94)*p),tg=Math.floor(107+(116-107)*p),tb=Math.floor(124+(240-124)*p);
+    // Halo border: grey → blue
+    const hr=Math.floor(94+(52-94)*p),hg=Math.floor(107+(116-107)*p),hb=Math.floor(124+(240-124)*p);
+    setText(els.txtMain,`${Math.max(0,rTimer)}s`,`rgb(${tr},${tg},${tb})`);
+    els.halo.style.borderColor=`rgb(${hr},${hg},${hb})`;
+    if(rTimer<0){
+      clearInterval(state.interval);state.interval=null;playChime();
+      if(state.wimCurrentRound<config.wimTotalRounds){state.wimCurrentRound++;startWimHof();}else finishRound();
+    }
+  },1000);
+}
 
-        function backToMenuFromIntro() {
-            els.introPanel.classList.remove('visible');
-            setTimeout(() => {
-                els.modalOverlay.classList.remove('visible');
-                els.menuWrapper.classList.remove('fade-out');
-            }, 300);
-        }
+// ── BOX ───────────────────────────────────────────────────────────
+function startBoxBreathing(){
+  state.phase=PHASE_ACTIVE;state.breathCount=1;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.txtSub,"");els.boxDot.style.transition="none";els.boxDot.style.top="100%";els.boxDot.style.left="0%";void els.boxDot.offsetWidth;runBoxCycle();
+}
+function runBoxCycle(){
+  if(state.phase!==PHASE_ACTIVE)return;if(state.breathCount>config.rounds)return finishRound();
+  setText(els.topLabel,`ROUND ${state.breathCount} / ${config.rounds}`,"var(--text-muted)");setText(els.txtMain,"INHALE","var(--accent-blue)");
+  els.boxPath.style.animation="none";
+  els.boxDot.style.transition=`top ${config.boxInhale}s linear,left ${config.boxInhale}s linear,background 0.3s ease`;
+  els.boxDot.style.top="0%";els.boxDot.style.left="0%";els.boxDot.style.background="var(--accent-blue)";els.boxDot.style.boxShadow="0 0 12px var(--accent-blue)";
+  state.textTimeout=setTimeout(()=>{
+    if(state.phase!==PHASE_ACTIVE)return;
+    setText(els.txtMain,"HOLD","var(--halo-hold)");els.boxPath.style.animation="pulseHoldBox 1.5s ease-in-out infinite";
+    els.boxDot.style.transition=`top ${config.boxHoldTop}s linear,left ${config.boxHoldTop}s linear,background 0.3s ease`;
+    els.boxDot.style.left="100%";els.boxDot.style.background="var(--halo-hold)";els.boxDot.style.boxShadow="none";
+    state.textTimeout=setTimeout(()=>{
+      if(state.phase!==PHASE_ACTIVE)return;
+      setText(els.txtMain,"EXHALE","var(--text-main)");els.boxPath.style.animation="none";
+      els.boxDot.style.transition=`top ${config.boxExhale}s linear,left ${config.boxExhale}s linear,background 0.3s ease`;
+      els.boxDot.style.top="100%";els.boxDot.style.background="var(--accent-blue)";els.boxDot.style.boxShadow="0 0 12px var(--accent-blue)";
+      state.textTimeout=setTimeout(()=>{
+        if(state.phase!==PHASE_ACTIVE)return;
+        setText(els.txtMain,"HOLD","var(--halo-hold)");els.boxPath.style.animation="pulseHoldBox 1.5s ease-in-out infinite";
+        els.boxDot.style.transition=`top ${config.boxHoldBottom}s linear,left ${config.boxHoldBottom}s linear,background 0.3s ease`;
+        els.boxDot.style.left="0%";els.boxDot.style.background="var(--halo-hold)";els.boxDot.style.boxShadow="none";
+        state.textTimeout=setTimeout(()=>{if(state.phase!==PHASE_ACTIVE)return;state.breathCount++;runBoxCycle();},config.boxHoldBottom*1000);
+      },config.boxExhale*1000);
+    },config.boxHoldTop*1000);
+  },config.boxInhale*1000);
+}
 
-        function goToSettings() {
-            els.introPanel.classList.remove('visible');
-            els.wimHofSettings.style.display = 'none';
-            els.boxSettings.style.display = 'none';
-            els.fiveSevenEightSettings.style.display = 'none';
-            els.basicSettings.style.display = 'none';
-            els.meditationSettings.style.display = 'none';
+// ── BELLY ─────────────────────────────────────────────────────────
+function startBellyBreathing(){
+  state.phase=PHASE_ACTIVE;state.breathCount=1;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.txtMain,"","");els.halo.style.transition="none";els.halo.style.borderColor="var(--halo-breathing)";
+  els.halo.style.animation=`breatheCycle ${config.inhale+config.exhale}s ease-in-out infinite`;
+  els.halo.addEventListener('animationiteration',bellyIteration);cycleBellyText();
+}
+function cycleBellyText(){
+  if(state.phase!==PHASE_ACTIVE)return;setText(els.topLabel,`ROUND ${state.breathCount} / ${config.rounds}`);setText(els.txtMain,"INHALE","var(--accent-blue)");setText(els.txtSub,"Belly Rises");
+  state.textTimeout=setTimeout(()=>{if(state.phase===PHASE_ACTIVE){setText(els.txtMain,"EXHALE","var(--text-main)");setText(els.txtSub,"Belly Falls");}},config.inhale*1000);
+}
+function bellyIteration(){if(state.phase!==PHASE_ACTIVE)return;if(state.breathCount<config.rounds){state.breathCount++;cycleBellyText();}else finishRound();}
 
-            if(activeMode === 'wimhof') els.wimHofSettings.style.display = 'block';
-            else if (activeMode === 'box') els.boxSettings.style.display = 'block';
-            else if (activeMode === 'fiveseveneight') els.fiveSevenEightSettings.style.display = 'block';
-            else if (activeMode === 'meditation') els.meditationSettings.style.display = 'block';
-            else els.basicSettings.style.display = 'block';
-            
-            els.settingsTitle.innerText = intros[activeMode].title + " Config";
-            setTimeout(() => els.settingsPanel.classList.add('visible'), 300); 
-        }
+// ── NADI ──────────────────────────────────────────────────────────
+function startNadiBreathing(){
+  state.phase=PHASE_NADI;state.breathCount=1;state.nadiStep=0;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.txtMain,"","");els.halo.style.transition="none";els.halo.style.borderColor="var(--halo-breathing)";
+  els.halo.style.animation=`breatheCycle ${config.inhale+config.exhale}s ease-in-out infinite`;
+  els.halo.addEventListener('animationiteration',nadiIteration);cycleNadiText();
+}
+function cycleNadiText(){
+  if(state.phase!==PHASE_NADI)return;setText(els.topLabel,`ROUND ${state.breathCount} / ${config.rounds}`);
+  els.nadiGraphic.classList.remove('block-left','block-right');
+  if(state.nadiStep===0){setText(els.txtMain,"INHALE","var(--accent-blue)");setText(els.txtSub,"Right Nostril");els.nadiGraphic.classList.add('block-right');state.textTimeout=setTimeout(()=>{if(state.phase===PHASE_NADI){state.nadiStep=1;els.nadiGraphic.classList.remove('block-right');cycleNadiText();}},config.inhale*1000);}
+  else if(state.nadiStep===1){setText(els.txtMain,"EXHALE","var(--text-main)");setText(els.txtSub,"Left Nostril");els.nadiGraphic.classList.add('block-left');}
+  else if(state.nadiStep===2){setText(els.txtMain,"INHALE","var(--accent-blue)");setText(els.txtSub,"Left Nostril");els.nadiGraphic.classList.add('block-left');state.textTimeout=setTimeout(()=>{if(state.phase===PHASE_NADI){state.nadiStep=3;els.nadiGraphic.classList.remove('block-left');cycleNadiText();}},config.inhale*1000);}
+  else if(state.nadiStep===3){setText(els.txtMain,"EXHALE","var(--text-main)");setText(els.txtSub,"Right Nostril");els.nadiGraphic.classList.add('block-right');}
+}
+function nadiIteration(){if(state.phase!==PHASE_NADI)return;if(state.nadiStep===1){state.nadiStep=2;cycleNadiText();}else if(state.nadiStep===3){if(state.breathCount<config.rounds){state.breathCount++;state.nadiStep=0;cycleNadiText();}else finishRound();}}
 
-        function backToMenuFromSettings() {
-            els.settingsPanel.classList.remove('visible');
-            setTimeout(() => els.introPanel.classList.add('visible'), 300);
-        }
+// ── 5-7-8 ─────────────────────────────────────────────────────────
+function startFiveSevenEight(){
+  state.phase=PHASE_578;state.breathCount=1;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.txtSub,"");els.halo.style.animation="none";runFiveSevenEightCycle();
+}
+function runFiveSevenEightCycle(){
+  if(state.phase!==PHASE_578)return;if(state.breathCount>config.rounds)return finishRound();
+  setText(els.topLabel,`ROUND ${state.breathCount} / ${config.rounds}`,"var(--text-muted)");setText(els.txtMain,"INHALE","var(--accent-blue)");
+  els.halo.style.animation="none";void els.halo.offsetWidth;
+  els.halo.style.transition=`transform ${config.fInhale}s cubic-bezier(0.65,0,0.35,1),border-color 0.5s ease,border-width ${config.fInhale}s cubic-bezier(0.65,0,0.35,1)`;
+  els.halo.style.transform="scale(1.8)";els.halo.style.borderWidth="10px";els.halo.style.borderColor="var(--halo-breathing)";
+  state.phaseTimeout=setTimeout(()=>{
+    if(state.phase!==PHASE_578)return;setText(els.txtMain,"HOLD","var(--halo-hold)");els.halo.style.transition="border-color 0.5s ease";els.halo.style.borderColor="var(--halo-hold)";
+    setTimeout(()=>{if(state.phase===PHASE_578)els.halo.style.animation="pulseHoldBig 1.5s ease-in-out infinite";},500);
+    state.phaseTimeout=setTimeout(()=>{
+      if(state.phase!==PHASE_578)return;setText(els.txtMain,"EXHALE","var(--text-main)");
+      els.halo.style.animation="none";void els.halo.offsetWidth;
+      els.halo.style.transition=`transform ${config.fExhale}s cubic-bezier(0.65,0,0.35,1),border-color 0.5s ease,border-width ${config.fExhale}s cubic-bezier(0.65,0,0.35,1)`;
+      els.halo.style.transform="scale(1)";els.halo.style.borderWidth="20px";els.halo.style.borderColor="var(--halo-breathing)";
+      state.phaseTimeout=setTimeout(()=>{if(state.phase!==PHASE_578)return;state.breathCount++;runFiveSevenEightCycle();},config.fExhale*1000);
+    },config.fHold*1000);
+  },config.fInhale*1000);
+}
 
-        function startSession() {
-            // Unlock audio context on initial button click interaction to prevent browser blocking
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+// ── HORSE ─────────────────────────────────────────────────────────
+function startHorseStance(){
+  state.phase=PHASE_ACTIVE;state.breathCount=1;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.txtMain,"","");els.halo.style.transition="none";els.halo.style.borderColor="var(--halo-breathing)";
+  els.halo.style.animation=`breatheCycle ${config.inhale+config.exhale}s ease-in-out infinite`;
+  els.halo.addEventListener('animationiteration',horseIteration);cycleHorseText();
+}
+function cycleHorseText(){
+  if(state.phase!==PHASE_ACTIVE)return;setText(els.topLabel,`ROUND ${state.breathCount} / ${config.rounds}`);setText(els.txtMain,"INHALE","var(--accent-blue)");setText(els.txtSub,"Sink Base");
+  state.textTimeout=setTimeout(()=>{if(state.phase===PHASE_ACTIVE){setText(els.txtMain,"EXHALE","var(--text-main)");setText(els.txtSub,"Hold Ground");}},config.inhale*1000);
+}
+function horseIteration(){if(state.phase!==PHASE_ACTIVE)return;if(state.breathCount<config.rounds){state.breathCount++;cycleHorseText();}else finishRound();}
 
-            if(activeMode === 'wimhof') {
-                config.wimTotalRounds = parseInt(document.getElementById('wTotalRounds').value) || 3;
-                config.rounds = parseInt(document.getElementById('wNbBreaths').value);
-                config.inhale = parseFloat(document.getElementById('wInhale').value);
-                config.exhale = parseFloat(document.getElementById('wExhale').value);
-                config.hold = parseInt(document.getElementById('wHold').value);
-                config.recover = parseInt(document.getElementById('wRecover').value);
-                state.wimCurrentRound = 1; 
-            } else if(activeMode === 'box') {
-                config.rounds = parseInt(document.getElementById('bNbRounds').value);
-                config.boxInhale = parseFloat(document.getElementById('bInhale').value);
-                config.boxHoldTop = parseFloat(document.getElementById('bHoldTop').value);
-                config.boxExhale = parseFloat(document.getElementById('bExhale').value);
-                config.boxHoldBottom = parseFloat(document.getElementById('bHoldBottom').value);
-            } else if (activeMode === 'fiveseveneight') {
-                config.rounds = parseInt(document.getElementById('fNbRounds').value);
-                config.fInhale = parseFloat(document.getElementById('fInhale').value);
-                config.fHold = parseFloat(document.getElementById('fHold').value);
-                config.fExhale = parseFloat(document.getElementById('fExhale').value);
-            } else if (activeMode === 'meditation') {
-                config.mDuration = parseInt(document.getElementById('mDuration').value);
-            } else {
-                config.rounds = parseInt(document.getElementById('cNbRounds').value);
-                config.inhale = parseFloat(document.getElementById('cInhale').value);
-                config.exhale = parseFloat(document.getElementById('cExhale').value);
-            }
+// ── MEDITATION ────────────────────────────────────────────────────
+function startMeditation(){
+  state.phase=PHASE_MEDITATION;els.controls.classList.add('active');els.topLabel.classList.add('active');
+  setText(els.topLabel,"MEDITATION","var(--text-muted)");setText(els.txtSub,"Time Left");
+  els.halo.style.animation="pulseHoldBig 8s ease-in-out infinite";els.halo.style.borderColor="var(--halo-hold)";els.halo.style.borderWidth="20px";
+  let mTimer=config.mDuration*60;setText(els.txtMain,formatTime(mTimer),"");
+  state.interval=setInterval(()=>{mTimer--;setText(els.txtMain,formatTime(mTimer));if(mTimer<=0){clearInterval(state.interval);state.interval=null;playChime();finishRound();}},1000);
+}
 
-            if(activeMode === 'box') {
-                els.boxPath.classList.add('active');
-                els.halo.style.opacity = '0'; 
-            } else {
-                els.boxPath.classList.remove('active');
-                els.halo.style.opacity = '1';
-                if(activeMode !== 'fiveseveneight' && activeMode !== 'meditation') generateKeyframes(config.inhale, config.exhale);
-                if(activeMode === 'nadi') els.nadiGraphic.classList.add('visible');
-            }
-
-            els.introPanel.classList.remove('visible');
-            els.settingsPanel.classList.remove('visible');
-            els.modalOverlay.classList.remove('visible');
-            els.menuWrapper.classList.add('fade-out'); 
-            els.visualizerLayer.classList.remove('mode-menu');
-            els.visualizerLayer.classList.add('mode-session');
-            setText(els.txtMain, "Start", "");
-            setText(els.txtSub, activeMode === 'meditation' ? "Focus" : "Breathing");
-            if(activeMode === 'nadi') els.centerHud.style.transform = "translateY(25px)";
-            
-            setTimeout(() => {
-                if(activeMode === 'wimhof') startWimHof();
-                else if(activeMode === 'box') startBoxBreathing();
-                else if(activeMode === 'belly') startBellyBreathing();
-                else if(activeMode === 'nadi') startNadiBreathing();
-                else if(activeMode === 'fiveseveneight') startFiveSevenEight();
-                else if(activeMode === 'horse') startHorseStance();
-                else if(activeMode === 'meditation') startMeditation();
-            }, 800);
-        }
-
-        function endSession() {
-            stopAllLogic();
-            resetHaloToIdle();
-            els.controls.classList.remove('active');
-            els.btnExtend.classList.remove('visible');
-            els.topLabel.classList.remove('active');
-            els.visualizerLayer.classList.remove('mode-session');
-            els.visualizerLayer.classList.add('mode-menu');
-            setTimeout(() => els.menuWrapper.classList.remove('fade-out'), 500); 
-        }
-
-        function skipStep() {
-            let currentPhase = state.phase;
-            stopAllLogic();
-            if (activeMode === 'wimhof') {
-                if (currentPhase === PHASE_WIM_BREATHING) {
-                    playChime();
-                    startRetentionPhase();
-                } else if (currentPhase === PHASE_WIM_RETENTION) {
-                    playChime();
-                    startRecoveryPhase();
-                } else if (currentPhase === PHASE_WIM_RECOVERY) {
-                    playChime();
-                    if (state.wimCurrentRound < config.wimTotalRounds) {
-                        state.wimCurrentRound++;
-                        startWimHof();
-                    } else finishRound();
-                }
-            } else finishRound(); 
-        }
-
-        function generateKeyframes(inhale, exhale) {
-            const total = inhale + exhale, inhalePercent = (inhale / total) * 100;
-            els.styleSheet.innerText = `@keyframes breatheCycle { 0% { transform: scale(1); border-width: 20px; } ${inhalePercent}% { transform: scale(1.8); border-width: 10px; } 100% { transform: scale(1); border-width: 20px; } }`;
-        }
-
-        function startMeditation() {
-            state.phase = PHASE_MEDITATION;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.topLabel, "MEDITATION", "var(--text-muted)");
-            setText(els.txtSub, "Time Left");
-
-            els.halo.style.animation = "pulseHoldBig 8s ease-in-out infinite"; // Gentle visual pulse
-            els.halo.style.borderColor = "var(--halo-hold)";
-            els.halo.style.borderWidth = "20px";
-
-            let mTimer = config.mDuration * 60; // Converting minutes to seconds
-            setText(els.txtMain, formatTime(mTimer), "");
-
-            state.interval = setInterval(() => {
-                mTimer--;
-                setText(els.txtMain, formatTime(mTimer));
-
-                if (mTimer <= 0) {
-                    clearInterval(state.interval);
-                    playChime(); // Play bell when done
-                    finishRound();
-                }
-            }, 1000);
-        }
-
-        function startWimHof() {
-            state.phase = PHASE_WIM_BREATHING;
-            state.breathCount = 1;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            els.topWatermark.classList.add('active');
-            setText(els.txtSub, "Breaths");
-            setText(els.txtMain, `1 / ${config.rounds}`, "");
-            
-            els.halo.style.animation = "none"; 
-            els.halo.style.transition = "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.8s ease, border-width 0.8s ease"; 
-            els.halo.style.transform = "scale(1)";
-            els.halo.style.borderWidth = "20px";
-            els.halo.style.borderColor = "var(--halo-breathing)";
-            
-            setTimeout(() => {
-                if (state.phase !== PHASE_WIM_BREATHING) return;
-                els.halo.style.transition = "none"; 
-                els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
-                els.halo.addEventListener('animationiteration', wimHofIteration);
-                cycleWimHofText();
-            }, 800);
-        }
-
-        function cycleWimHofText() {
-            if (state.phase !== PHASE_WIM_BREATHING) return;
-            els.topWatermark.innerText = `Round ${state.wimCurrentRound}`;
-            setText(els.topLabel, `INHALE`, "var(--text-main)");
-            state.textTimeout = setTimeout(() => {
-                if (state.phase === PHASE_WIM_BREATHING) setText(els.topLabel, `EXHALE`, "var(--text-muted)");
-            }, config.inhale * 1000);
-        }
-
-        function wimHofIteration() {
-            if (state.phase !== PHASE_WIM_BREATHING) return;
-            if (state.breathCount < config.rounds) {
-                state.breathCount++;
-                setText(els.txtMain, `${state.breathCount} / ${config.rounds}`);
-                cycleWimHofText();
-            } else {
-                els.halo.removeEventListener('animationiteration', wimHofIteration);
-                playChime(); // CHIME: Breathing Phase -> Retention Phase
-                startRetentionPhase();
-            }
-        }
-
-        function startRetentionPhase() {
-            state.phase = PHASE_WIM_RETENTION;
-            state.timerVal = config.hold;
-            state.maxTimerVal = config.hold;
-            els.halo.style.animation = 'none';
-            if(state.textTimeout) clearTimeout(state.textTimeout);
-            void els.halo.offsetWidth; 
-            setText(els.topLabel, "HOLD BREATH", "var(--text-muted)");
-            setText(els.txtSub, "Retention");
-            els.halo.style.transition = "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease";
-            requestAnimationFrame(() => {
-                els.halo.style.transform = "scale(0.85)";
-                els.halo.style.borderColor = "var(--halo-hold)";
-                els.halo.style.borderWidth = "20px";
-            });
-            setTimeout(() => { if (state.phase === PHASE_WIM_RETENTION) els.halo.style.animation = "heartbeat 1.5s ease-in-out infinite"; }, 2000); 
-            setText(els.txtMain, formatTime(state.timerVal), "");
-            els.btnExtend.classList.add('visible');
-            state.interval = setInterval(() => {
-                let progress = 1 - (state.timerVal / state.maxTimerVal);
-                let tr = Math.floor(52 + (19 - 52) * progress), tg = Math.floor(116 + (19 - 116) * progress), tb = Math.floor(240 + (19 - 240) * progress);
-                setText(els.txtMain, formatTime(state.timerVal), `rgb(${tr}, ${tg}, ${tb})`);
-                let r = Math.floor(94 + (211 - 94) * progress), g = Math.floor(107 + (47 - 107) * progress), b = Math.floor(124 + (47 - 124) * progress);
-                els.halo.style.borderColor = `rgb(${r}, ${g}, ${b})`;
-                if (--state.timerVal < 0) {
-                    clearInterval(state.interval);
-                    playChime(); // CHIME: Retention Phase -> Recovery Phase
-                    startRecoveryPhase();
-                }
-            }, 1000);
-        }
-
-        function extendTimer(e) {
-            e.stopPropagation();
-            state.timerVal += 15;
-            state.maxTimerVal += 15;
-            setText(els.txtMain, formatTime(state.timerVal)); 
-        }
-
-        function startRecoveryPhase() {
-            state.phase = PHASE_WIM_RECOVERY;
-            stopAllLogic();
-            els.btnExtend.classList.remove('visible');
-            
-            setTimeout(() => {
-                els.halo.style.transition = "transform 1.0s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s linear";
-                els.halo.style.transform = "scale(1.8)"; 
-                els.halo.style.borderWidth = "10px"; 
-                setTimeout(() => { if (state.phase === PHASE_WIM_RECOVERY) els.halo.style.animation = "heartbeatBlueBig 1.5s ease-in-out infinite"; }, 1000);
-            }, 50);
-
-            setText(els.topLabel, "INHALE & HOLD", "var(--accent-blue)");
-            setText(els.txtSub, "Recovery");
-
-            let rTimer = config.recover;
-            let maxRTimer = config.recover;
-            
-            setText(els.txtMain, `${rTimer}s`, "rgb(19, 19, 19)");
-            els.halo.style.borderColor = "rgb(211, 47, 47)";
-            
-            state.interval = setInterval(() => {
-                rTimer--;
-                
-                let progress = 1 - (Math.max(0, rTimer) / maxRTimer);
-                
-                let tr = Math.floor(19 + (52 - 19) * progress);
-                let tg = Math.floor(19 + (116 - 19) * progress);
-                let tb = Math.floor(19 + (240 - 19) * progress);
-                
-                let hr = Math.floor(211 + (52 - 211) * progress);
-                let hg = Math.floor(47 + (116 - 47) * progress);
-                let hb = Math.floor(47 + (240 - 47) * progress);
-
-                setText(els.txtMain, `${Math.max(0, rTimer)}s`, `rgb(${tr}, ${tg}, ${tb})`);
-                els.halo.style.borderColor = `rgb(${hr}, ${hg}, ${hb})`;
-
-                if (rTimer < 0) {
-                    clearInterval(state.interval);
-                    playChime(); // CHIME: Recovery Phase -> Next Round OR Finish
-                    if (state.wimCurrentRound < config.wimTotalRounds) {
-                        state.wimCurrentRound++;
-                        startWimHof();
-                    } else {
-                        finishRound();
-                    }
-                }
-            }, 1000);
-        }
-
-        // ---------- Box Breathing Logic -----------
-        function startBoxBreathing() {
-            state.phase = PHASE_ACTIVE;
-            state.breathCount = 1;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.txtSub, ""); 
-            els.boxDot.style.transition = "none";
-            els.boxDot.style.top = "100%";
-            els.boxDot.style.left = "0%";
-            void els.boxDot.offsetWidth;
-            runBoxCycle();
-        }
-
-        function runBoxCycle() {
-            if(state.phase !== PHASE_ACTIVE) return;
-            if(state.breathCount > config.rounds) return finishRound();
-            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`, "var(--text-muted)");
-            setText(els.txtMain, "INHALE", "var(--accent-blue)");
-            
-            els.boxPath.style.animation = "none";
-            
-            els.boxDot.style.transition = `top ${config.boxInhale}s linear, left ${config.boxInhale}s linear, background 0.3s ease`;
-            els.boxDot.style.top = "0%";
-            els.boxDot.style.left = "0%";
-            els.boxDot.style.background = "var(--accent-blue)";
-            els.boxDot.style.boxShadow = "0 0 12px var(--accent-blue)";
-            state.textTimeout = setTimeout(() => {
-                if(state.phase !== PHASE_ACTIVE) return;
-                setText(els.txtMain, "HOLD", "var(--halo-hold)"); 
-                els.boxPath.style.animation = "pulseHoldBox 1.5s ease-in-out infinite"; 
-                els.boxDot.style.transition = `top ${config.boxHoldTop}s linear, left ${config.boxHoldTop}s linear, background 0.3s ease`;
-                els.boxDot.style.left = "100%";
-                els.boxDot.style.background = "var(--halo-hold)"; 
-                els.boxDot.style.boxShadow = "none";
-                state.textTimeout = setTimeout(() => {
-                    if(state.phase !== PHASE_ACTIVE) return;
-                    setText(els.txtMain, "EXHALE", "var(--text-main)");
-                    els.boxPath.style.animation = "none"; 
-                    els.boxDot.style.transition = `top ${config.boxExhale}s linear, left ${config.boxExhale}s linear, background 0.3s ease`;
-                    els.boxDot.style.top = "100%";
-                    els.boxDot.style.background = "var(--accent-blue)"; 
-                    els.boxDot.style.boxShadow = "0 0 12px var(--accent-blue)";
-                    state.textTimeout = setTimeout(() => {
-                        if(state.phase !== PHASE_ACTIVE) return;
-                        setText(els.txtMain, "HOLD", "var(--halo-hold)");
-                        els.boxPath.style.animation = "pulseHoldBox 1.5s ease-in-out infinite";
-                        els.boxDot.style.transition = `top ${config.boxHoldBottom}s linear, left ${config.boxHoldBottom}s linear, background 0.3s ease`;
-                        els.boxDot.style.left = "0%";
-                        els.boxDot.style.background = "var(--halo-hold)"; 
-                        els.boxDot.style.boxShadow = "none";
-                        state.textTimeout = setTimeout(() => {
-                            if(state.phase !== PHASE_ACTIVE) return;
-                            state.breathCount++;
-                            runBoxCycle(); 
-                        }, config.boxHoldBottom * 1000);
-                    }, config.boxExhale * 1000);
-                }, config.boxHoldTop * 1000);
-            }, config.boxInhale * 1000);
-        }
-
-        // ---------- Belly Breathing Logic -----------
-        function startBellyBreathing() {
-            state.phase = PHASE_ACTIVE;
-            state.breathCount = 1;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.txtMain, "", ""); 
-            els.halo.style.transition = "none"; 
-            els.halo.style.borderColor = "var(--halo-breathing)";
-            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
-            els.halo.addEventListener('animationiteration', bellyIteration);
-            cycleBellyText();
-        }
-
-        function cycleBellyText() {
-            if (state.phase !== PHASE_ACTIVE) return;
-            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
-            setText(els.txtMain, "INHALE", "var(--accent-blue)");
-            setText(els.txtSub, "Belly Rises");
-            state.textTimeout = setTimeout(() => {
-                if (state.phase === PHASE_ACTIVE) {
-                    setText(els.txtMain, "EXHALE", "var(--text-main)");
-                    setText(els.txtSub, "Belly Falls");
-                }
-            }, config.inhale * 1000);
-        }
-
-        function bellyIteration() {
-            if (state.phase !== PHASE_ACTIVE) return;
-            if (state.breathCount < config.rounds) {
-                state.breathCount++;
-                cycleBellyText();
-            } else finishRound();
-        }
-
-        // ---------- Nadi Shodhana Logic -----------
-        function startNadiBreathing() {
-            state.phase = PHASE_NADI;
-            state.breathCount = 1;
-            state.nadiStep = 0; 
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.txtMain, "", ""); 
-            els.halo.style.transition = "none"; 
-            els.halo.style.borderColor = "var(--halo-breathing)";
-            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
-            els.halo.addEventListener('animationiteration', nadiIteration);
-            cycleNadiText();
-        }
-
-        function cycleNadiText() {
-            if (state.phase !== PHASE_NADI) return;
-            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
-            els.nadiGraphic.classList.remove('block-left', 'block-right');
-            if(state.nadiStep === 0) {
-                setText(els.txtMain, "INHALE", "var(--accent-blue)");
-                setText(els.txtSub, "Right Nostril");
-                els.nadiGraphic.classList.add('block-right'); 
-                state.textTimeout = setTimeout(() => {
-                    if (state.phase === PHASE_NADI) {
-                        state.nadiStep = 1; 
-                        els.nadiGraphic.classList.remove('block-right'); 
-                        cycleNadiText();
-                    }
-                }, config.inhale * 1000);
-            } else if (state.nadiStep === 1) {
-                setText(els.txtMain, "EXHALE", "var(--text-main)");
-                setText(els.txtSub, "Left Nostril");
-                els.nadiGraphic.classList.add('block-left'); 
-            } else if (state.nadiStep === 2) {
-                setText(els.txtMain, "INHALE", "var(--accent-blue)");
-                setText(els.txtSub, "Left Nostril");
-                els.nadiGraphic.classList.add('block-left'); 
-                state.textTimeout = setTimeout(() => {
-                    if (state.phase === PHASE_NADI) {
-                        state.nadiStep = 3; 
-                        els.nadiGraphic.classList.remove('block-left'); 
-                        cycleNadiText();
-                    }
-                }, config.inhale * 1000);
-            } else if (state.nadiStep === 3) {
-                setText(els.txtMain, "EXHALE", "var(--text-main)");
-                setText(els.txtSub, "Right Nostril");
-                els.nadiGraphic.classList.add('block-right'); 
-            }
-        }
-
-        function nadiIteration() {
-            if (state.phase !== PHASE_NADI) return;
-            if(state.nadiStep === 1) {
-                state.nadiStep = 2;
-                cycleNadiText();
-            } else if(state.nadiStep === 3) {
-                if (state.breathCount < config.rounds) {
-                    state.breathCount++;
-                    state.nadiStep = 0; 
-                    cycleNadiText();
-                } else finishRound();
-            }
-        }
-
-        // ---------- 5-7-8 Breathing Logic -----------
-        function startFiveSevenEight() {
-            state.phase = PHASE_578;
-            state.breathCount = 1;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.txtSub, ""); 
-            els.halo.style.animation = "none";
-            runFiveSevenEightCycle();
-        }
-
-        function runFiveSevenEightCycle() {
-            if (state.phase !== PHASE_578) return;
-            if (state.breathCount > config.rounds) return finishRound();
-            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`, "var(--text-muted)");
-            setText(els.txtMain, "INHALE", "var(--accent-blue)");
-            
-            els.halo.style.animation = "none"; 
-            void els.halo.offsetWidth; 
-            
-            els.halo.style.transition = `transform ${config.fInhale}s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.5s ease, border-width ${config.fInhale}s cubic-bezier(0.65, 0, 0.35, 1)`;
-            els.halo.style.transform = "scale(1.8)";
-            els.halo.style.borderWidth = "10px";
-            els.halo.style.borderColor = "var(--halo-breathing)";
-            
-            state.phaseTimeout = setTimeout(() => {
-                if (state.phase !== PHASE_578) return;
-                setText(els.txtMain, "HOLD", "var(--halo-hold)");
-                els.halo.style.transition = "border-color 0.5s ease";
-                els.halo.style.borderColor = "var(--halo-hold)";
-                
-                setTimeout(() => {
-                    if (state.phase === PHASE_578) els.halo.style.animation = "pulseHoldBig 1.5s ease-in-out infinite";
-                }, 500); 
-
-                state.phaseTimeout = setTimeout(() => {
-                    if (state.phase !== PHASE_578) return;
-                    setText(els.txtMain, "EXHALE", "var(--text-main)");
-                    
-                    els.halo.style.animation = "none"; 
-                    void els.halo.offsetWidth; 
-                    
-                    els.halo.style.transition = `transform ${config.fExhale}s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.5s ease, border-width ${config.fExhale}s cubic-bezier(0.65, 0, 0.35, 1)`;
-                    els.halo.style.transform = "scale(1)";
-                    els.halo.style.borderWidth = "20px";
-                    els.halo.style.borderColor = "var(--halo-breathing)";
-                    
-                    state.phaseTimeout = setTimeout(() => {
-                        if (state.phase !== PHASE_578) return;
-                        state.breathCount++;
-                        runFiveSevenEightCycle();
-                    }, config.fExhale * 1000);
-                }, config.fHold * 1000);
-            }, config.fInhale * 1000);
-        }
-
-        // ---------- Horse Stance Logic -----------
-        function startHorseStance() {
-            state.phase = PHASE_ACTIVE;
-            state.breathCount = 1;
-            els.controls.classList.add('active');
-            els.topLabel.classList.add('active');
-            setText(els.txtMain, "", ""); 
-            els.halo.style.transition = "none"; 
-            els.halo.style.borderColor = "var(--halo-breathing)";
-            els.halo.style.animation = `breatheCycle ${config.inhale + config.exhale}s ease-in-out infinite`;
-            els.halo.addEventListener('animationiteration', horseIteration);
-            cycleHorseText();
-        }
-
-        function cycleHorseText() {
-            if (state.phase !== PHASE_ACTIVE) return;
-            setText(els.topLabel, `ROUND ${state.breathCount} / ${config.rounds}`);
-            setText(els.txtMain, "INHALE", "var(--accent-blue)");
-            setText(els.txtSub, "Sink Base");
-            state.textTimeout = setTimeout(() => {
-                if (state.phase === PHASE_ACTIVE) {
-                    setText(els.txtMain, "EXHALE", "var(--text-main)");
-                    setText(els.txtSub, "Hold Ground");
-                }
-            }, config.inhale * 1000);
-        }
-
-        function horseIteration() {
-            if (state.phase !== PHASE_ACTIVE) return;
-            if (state.breathCount < config.rounds) {
-                state.breathCount++;
-                cycleHorseText();
-            } else finishRound();
-        }
-
-        function finishRound() {
-            stopAllLogic();
-            resetHaloToIdle();
-            setText(els.topLabel, "COMPLETE", "var(--text-muted)");
-            setText(els.txtMain, "Done", "");
-            setText(els.txtSub, "");
-            setTimeout(endSession, 2000);
-        }
-
-        function stopAllLogic() {
-            state.phase = PHASE_IDLE;
-            if (state.interval) clearInterval(state.interval);
-            if (state.textTimeout) clearTimeout(state.textTimeout);
-            if (state.phaseTimeout) clearTimeout(state.phaseTimeout);
-            els.halo.style.animation = 'none';
-            els.boxPath.style.animation = 'none';
-            els.halo.removeEventListener('animationiteration', wimHofIteration);
-            els.halo.removeEventListener('animationiteration', bellyIteration);
-            els.halo.removeEventListener('animationiteration', nadiIteration);
-            els.halo.removeEventListener('animationiteration', horseIteration);
-            els.nadiGraphic.classList.remove('visible', 'block-left', 'block-right');
-            els.topWatermark.classList.remove('active');
-        }
-
-        function resetHaloToIdle() {
-            setText(els.txtMain, "<sub>2</sub>", "");
-            setText(els.txtSub, "FLOW");
-            els.centerHud.style.transform = "translateY(0px)";
-            els.halo.style.opacity = ''; 
-            els.halo.style.transform = '';
-            els.halo.style.borderColor = "";
-            els.halo.style.borderWidth = "";
-            els.halo.style.boxShadow = "";
-            els.halo.style.transition = '';
-            els.boxPath.classList.remove('active');
-            els.boxPath.style.animation = "none";
-            els.boxDot.style.transition = "none";
-            els.boxDot.style.top = "100%";
-            els.boxDot.style.left = "0%";
-        }
-
-        function formatTime(s) {
-            if (s < 0) return "0:00";
-            const min = Math.floor(s / 60), sec = s % 60;
-            return `${min}:${sec < 10 ? '0'+sec : sec}`;
-        }
-    </script>
+// ── FINISH / STOP ─────────────────────────────────────────────────
+function finishRound(){
+  const dur=(Date.now()-sessionStartTime)/60000;recordSession(activeMode,Math.max(0.1,dur));
+  stopAllLogic();resetHaloToIdle();
+  setText(els.topLabel,"COMPLETE","var(--text-muted)");setText(els.txtMain,"Done","");setText(els.txtSub,"");
+  if(isSessionMode){
+    sessionQueueIndex++;
+    setTimeout(()=>{
+      if(sessionQueueIndex<sessionQueue.length){setText(els.txtMain,"Next","");setText(els.txtSub,intros[sessionQueue[sessionQueueIndex].mode].title);setTimeout(()=>runNextInQueue(),2000);}
+      else{isSessionMode=false;updateSeqIndicator(false);setTimeout(endSession,2000);}
+    },500);
+  } else setTimeout(endSession,2000);
+}
+function stopAllLogic(){
+  state.phase=PHASE_IDLE;
+  if(state.interval){clearInterval(state.interval);state.interval=null;}
+  if(state.textTimeout){clearTimeout(state.textTimeout);state.textTimeout=null;}
+  if(state.phaseTimeout){clearTimeout(state.phaseTimeout);state.phaseTimeout=null;}
+  els.halo.style.animation='none';els.boxPath.style.animation='none';
+  els.halo.removeEventListener('animationiteration',wimHofIteration);
+  els.halo.removeEventListener('animationiteration',bellyIteration);
+  els.halo.removeEventListener('animationiteration',nadiIteration);
+  els.halo.removeEventListener('animationiteration',horseIteration);
+  els.nadiGraphic.classList.remove('visible','block-left','block-right');els.topWatermark.classList.remove('active');
+}
+function resetHaloToIdle(){
+  setText(els.txtMain,"<sub>2</sub>","");setText(els.txtSub,"FLOW");els.centerHud.style.transform="translateY(0px)";
+  els.halo.style.opacity='';els.halo.style.transform='';els.halo.style.borderColor="";els.halo.style.borderWidth="";els.halo.style.boxShadow="";els.halo.style.transition='';
+  els.boxPath.classList.remove('active');els.boxPath.style.animation="none";els.boxDot.style.transition="none";els.boxDot.style.top="100%";els.boxDot.style.left="0%";
+}
+function formatTime(s){if(s<0)return"0:00";const m=Math.floor(s/60),sec=s%60;return`${m}:${sec<10?'0'+sec:sec}`;}
+</script>
 </body>
 </html>
