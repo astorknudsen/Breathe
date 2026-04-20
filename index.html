@@ -23,6 +23,7 @@
   --btn-extend-bg:#FFFFFF;--btn-extend-border:#EEEEEE;
   --toggle-track:#DDDFE6;--toggle-thumb:#FFFFFF;
   --remove-hover-bg:#FFEBEE;
+  --scrollbar-thumb:rgba(0,0,0,0.15);--scrollbar-thumb-hover:rgba(0,0,0,0.28);
 }
 body.dark{
   --bg-color:#0f1117;--card-bg:#1a1d27;--text-main:#e8eaf0;--text-muted:#8997b1;--text-sub:#9aa3bc;
@@ -38,6 +39,7 @@ body.dark{
   --btn-extend-bg:#1a1d27;--btn-extend-border:#252836;
   --toggle-track:#252836;--toggle-thumb:#e8eaf0;
   --remove-hover-bg:#2a1215;
+  --scrollbar-thumb:rgba(255,255,255,0.12);--scrollbar-thumb-hover:rgba(255,255,255,0.22);
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-height:100dvh;overflow:hidden;position:relative;transition:background 0.35s ease,color 0.35s ease;overscroll-behavior:none;-webkit-text-size-adjust:100%;}
@@ -72,8 +74,8 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-heig
   .visualizer-layer.mode-menu .hud-main{font-size:10rem;transform:translateX(70px) translateY(12px);}
   .visualizer-layer.mode-menu .hud-sub{font-size:1.3rem;letter-spacing:4px;margin-top:44px;}
   .visualizer-layer.mode-menu .halo-ring{border-width:18px;}
-  .visualizer-layer.mode-menu{top:18%;}
-  .menu-wrapper,.session-view,.stats-view{height:68vh;}
+  .visualizer-layer.mode-menu{top:17%;}
+  .menu-wrapper,.session-view,.stats-view{top:30vh;}
   .menu-grid{gap:12px;}
   .menu-card-img{height:90px;}
   .menu-card-content{padding:14px;}
@@ -95,6 +97,53 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-heig
   .top-label{font-size:0.95rem;letter-spacing:2px;}
   .hud-main{font-size:1.6rem;}
 }
+
+/* Tablet / narrow desktop */
+@media(min-width:700px){
+  .menu-wrapper,.session-view,.stats-view{top:36vh;}
+  .menu-grid{max-width:920px;}
+  .session-queue,.session-start-bar{max-width:640px;}
+  .stats-inner{max-width:760px;}
+}
+
+/* Desktop */
+@media(min-width:1000px){
+  :root{--ring-size:150px;}
+  .visualizer-layer.mode-menu{top:22%;}
+  .visualizer-layer.mode-menu .halo-ring{border-width:26px;}
+  .visualizer-layer.mode-menu .hud-main{font-size:17rem;transform:translateX(120px) translateY(20px);}
+  .visualizer-layer.mode-menu .hud-sub{font-size:1.7rem;letter-spacing:5px;margin-top:68px;margin-left:22px;}
+  .menu-wrapper,.session-view,.stats-view{top:40vh;}
+  .menu-grid{max-width:1040px;grid-template-columns:repeat(3,minmax(260px,1fr));}
+  .menu-card-img{height:150px;}
+  .menu-card-content{padding:22px;}
+  .menu-card h3{font-size:1.2rem;}
+  .session-queue,.session-start-bar{max-width:680px;}
+  .stats-inner{max-width:820px;}
+  .controls{bottom:max(36px,calc(20px + env(safe-area-inset-bottom)));}
+  .seq-indicator{padding:10px 18px;font-size:0.8rem;}
+}
+
+/* Wide desktop */
+@media(min-width:1400px){
+  :root{--ring-size:165px;}
+  .visualizer-layer.mode-menu{top:24%;}
+  .visualizer-layer.mode-menu .hud-main{font-size:19rem;transform:translateX(140px) translateY(24px);}
+  .menu-wrapper,.session-view,.stats-view{top:44vh;}
+  .menu-grid{max-width:1140px;}
+  .session-queue,.session-start-bar{max-width:720px;}
+  .stats-inner{max-width:900px;}
+}
+
+/* Short-height fallback — prevent halo / content collision on laptops */
+@media(max-height:620px){
+  .menu-wrapper,.session-view,.stats-view{top:38vh;}
+  .visualizer-layer.mode-menu{top:16%;}
+  :root{--ring-size:100px;}
+  .visualizer-layer.mode-menu .halo-ring{border-width:16px;}
+  .visualizer-layer.mode-menu .hud-main{font-size:8rem;transform:translateX(55px) translateY(10px);}
+  .visualizer-layer.mode-menu .hud-sub{font-size:1.1rem;letter-spacing:3px;margin-top:36px;}
+}
 .box-path{position:absolute;width:150px;height:150px;border:4px solid var(--border-color);border-radius:8px;z-index:1;opacity:0;pointer-events:none;transition:opacity 0.5s ease;}
 .box-path.active{opacity:1;}
 .box-dot{position:absolute;width:18px;height:18px;background:var(--accent-blue);border-radius:50%;transform:translate(-50%,-50%);left:0%;top:100%;box-shadow:0 0 12px var(--accent-blue);z-index:2;}
@@ -105,10 +154,10 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-heig
 .nadi-graphic.block-left #fingerLeft{fill:var(--accent-blue);transform:translateX(6px);}
 .nadi-graphic.block-right #fingerRight{fill:var(--accent-blue);transform:translateX(-6px);}
 
-.menu-wrapper{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;transition:opacity 0.5s ease,transform 0.5s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.menu-wrapper{position:fixed;left:0;right:0;bottom:0;top:34vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;transition:opacity 0.5s ease,transform 0.5s ease;padding-bottom:calc(20px + env(safe-area-inset-bottom));}
 .menu-wrapper.fade-out{opacity:0;transform:translateY(40px);pointer-events:none;}
 .menu-title{text-align:center;font-size:0.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;flex-shrink:0;}
-.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:90%;max-width:900px;}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:90%;max-width:900px;padding:8px 6px 32px;flex-shrink:0;}
 .menu-card{background:var(--card-bg);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.04);cursor:pointer;transition:transform 0.2s cubic-bezier(0.2,0.8,0.2,1),box-shadow 0.2s;display:flex;flex-direction:column;overflow:hidden;}
 .menu-card:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.08);}
 .menu-card.clicked{transform:scale(1.05);box-shadow:0 25px 60px rgba(52,116,240,0.2);z-index:15;}
@@ -119,10 +168,10 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-heig
 @media(max-width:600px){.menu-grid{grid-template-columns:1fr;gap:15px;}.menu-card-img{height:110px;}.menu-card-content{padding:15px;}}
 
 /* SESSION */
-.session-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 90%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 90%,transparent 100%);}
+.session-view{position:fixed;left:0;right:0;bottom:0;top:34vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:0;opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);}
 .session-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
 .session-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
-.session-queue{display:flex;flex-direction:column;gap:12px;width:90%;max-width:600px;padding-top:8px;}
+.session-queue{display:flex;flex-direction:column;gap:12px;width:90%;max-width:600px;padding:8px 6px 16px;flex-shrink:0;}
 .queue-slot-header{display:flex;align-items:center;gap:10px;padding:12px 16px 12px 0;}
 .slot-number{width:26px;height:26px;border-radius:50%;background:var(--hover-blue);color:var(--accent-blue);font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .slot-info{flex:1;min-width:0;}
@@ -167,24 +216,24 @@ body{background:var(--bg-color);color:var(--text-main);min-height:100vh;min-heig
 .technique-picker{position:fixed;inset:0;z-index:160;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .technique-picker.open{opacity:1;pointer-events:auto;}
 .technique-picker-bg{position:absolute;inset:0;background:var(--picker-blur-bg);backdrop-filter:blur(4px);}
-.technique-picker-sheet{position:relative;z-index:1;background:var(--card-bg);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.1);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.2,0.8,0.2,1);}
+.technique-picker-sheet{position:relative;z-index:1;background:var(--card-bg);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:85dvh;padding:0 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.1);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.2,0.8,0.2,1);display:flex;flex-direction:column;}
 .technique-picker.open .technique-picker-sheet{transform:translateY(0);}
-.picker-title{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;text-align:center;}
-.picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.picker-title{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;text-align:center;padding-top:20px;flex-shrink:0;}
+.picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;flex:1 1 auto;min-height:0;}
 .picker-option{padding:14px 16px;background:var(--picker-opt);border:1px solid var(--picker-opt-border);border-radius:12px;cursor:pointer;transition:all 0.15s;}
 .picker-option:hover{background:var(--hover-blue);border-color:var(--accent-blue);}
 .picker-option h4{font-size:0.9rem;font-weight:600;margin-bottom:3px;}
 .picker-option p{font-size:0.75rem;color:var(--text-muted);}
-.session-start-bar{display:flex;gap:10px;width:90%;max-width:600px;margin-top:4px;flex-shrink:0;}
+.session-start-bar{display:flex;gap:10px;width:90%;max-width:600px;margin:auto 0 0;padding:16px 0 calc(12px + env(safe-area-inset-bottom));flex-shrink:0;position:sticky;bottom:0;background:linear-gradient(to top,var(--bg-color) 62%,rgba(0,0,0,0) 100%);z-index:3;}
 .btn-session-start{flex:1;padding:16px;border-radius:14px;background:var(--accent-blue);color:#FFF;font-size:1rem;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(52,116,240,0.2);transition:transform 0.1s;min-height:52px;touch-action:manipulation;}
 .btn-session-start:active{transform:scale(0.98);}
 .btn-session-start:disabled{opacity:0.4;cursor:not-allowed;}
 
 /* STATS */
-.stats-view{position:fixed;bottom:0;width:100%;height:65vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);mask-image:linear-gradient(to top,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 92%,transparent 100%);}
+.stats-view{position:fixed;left:0;right:0;bottom:0;top:34vh;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(20px + env(safe-area-inset-bottom));opacity:0;pointer-events:none;transition:opacity 0.4s ease,transform 0.4s ease;transform:translateY(30px);}
 .stats-view.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
 .stats-view.fade-out{opacity:0;pointer-events:none;transform:translateY(30px);}
-.stats-inner{width:90%;max-width:700px;padding-top:8px;display:flex;flex-direction:column;gap:16px;}
+.stats-inner{width:90%;max-width:700px;padding:8px 6px 16px;display:flex;flex-direction:column;gap:16px;flex-shrink:0;}
 .stat-cards-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .stat-card{background:var(--card-bg);border-radius:14px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.04);text-align:center;}
 .stat-card-val{font-size:1.8rem;font-weight:800;color:var(--accent-blue);line-height:1.1;}
@@ -280,6 +329,17 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
 @keyframes pulseHoldBig{0%{transform:scale(1.8);}10%{transform:scale(1.83);}20%{transform:scale(1.8);}100%{transform:scale(1.8);}}
 @keyframes pulseHoldBox{0%{transform:scale(1);}10%{transform:scale(0.96);}20%{transform:scale(1);}100%{transform:scale(1);}}
 #dynamicStyles{display:none;}
+
+/* ── SCROLLBARS ───────────────────────────────────────────────── */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:99px;}
+::-webkit-scrollbar-thumb:hover{background:var(--scrollbar-thumb-hover);}
+::-webkit-scrollbar-corner{background:transparent;}
+
+/* Firefox */
+*{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent;}
 </style>
 </head>
 <body>
@@ -347,9 +407,9 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
 
 <!-- SESSION -->
 <div class="session-view" id="sessionView">
-  <div class="menu-title" style="flex-shrink:0;">Build Session</div>
+  <div class="menu-title">Build Session</div>
   <div class="session-queue" id="sessionQueue"></div>
-  <div class="session-start-bar" style="margin-top:14px;">
+  <div class="session-start-bar">
     <button class="btn-session-start" id="sessionStartBtn" onclick="startSessionQueue()" disabled>Begin Session</button>
   </div>
 </div>
@@ -397,21 +457,21 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
     <div class="input-row"><div class="input-group"><label>Retention (s)</label><input type="number" id="wHold" value="90"></div><div class="input-group"><label>Recover (s)</label><input type="number" id="wRecover" value="15"></div></div>
   </div>
   <div id="boxSettings" style="display:none;">
-    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="bNbRounds" value="10"></div>
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="bNbRounds" value="8"></div>
     <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="bInhale" value="4"></div><div class="input-group"><label>Top Hold (s)</label><input type="number" id="bHoldTop" value="4"></div></div>
     <div class="input-row"><div class="input-group"><label>Exhale (s)</label><input type="number" id="bExhale" value="4"></div><div class="input-group"><label>Bottom Hold (s)</label><input type="number" id="bHoldBottom" value="4"></div></div>
   </div>
   <div id="fiveSevenEightSettings" style="display:none;">
-    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="fNbRounds" value="4"></div>
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="fNbRounds" value="6"></div>
     <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="fInhale" value="5"></div><div class="input-group"><label>Hold (s)</label><input type="number" id="fHold" value="7"></div></div>
     <div class="input-row"><div class="input-group"><label>Exhale (s)</label><input type="number" id="fExhale" value="8"></div></div>
   </div>
   <div id="basicSettings" style="display:none;">
-    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="cNbRounds" value="15"></div>
+    <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="cNbRounds" value="12"></div>
     <div class="input-row"><div class="input-group"><label>Inhale (s)</label><input type="number" id="cInhale" value="4" step="0.5"></div><div class="input-group"><label>Exhale (s)</label><input type="number" id="cExhale" value="6" step="0.5"></div></div>
   </div>
   <div id="meditationSettings" style="display:none;">
-    <div class="input-group" style="margin-bottom:15px;"><label>Duration (Minutes)</label><input type="number" id="mDuration" value="10" min="1"></div>
+    <div class="input-group" style="margin-bottom:15px;"><label>Duration (Minutes)</label><input type="number" id="mDuration" value="5" min="1"></div>
   </div>
   <div id="bhramariSettings" style="display:none;">
     <div class="input-group" style="margin-bottom:15px;"><label>Total Rounds</label><input type="number" id="brRounds" value="6" min="1"></div>
@@ -476,32 +536,90 @@ input[type=number]:focus{border-color:var(--accent-blue);background:var(--input-
   setTimeout(syncToggle,0);
 })();
 
+// ── IMAGE ASSETS ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// LIGHT MODE IMAGES — shown when dark mode is OFF
+// Replace any filename below to swap that technique's light-mode image.
+// ═══════════════════════════════════════════════════════════════════
+const LIGHT_MODE_IMAGES = {
+  wimhof:         "Gemini_Generated_Image_czxzw5czxzw5czxz.png",
+  box:            "Gemini_Generated_Image_.png",
+  belly:          "Gemini_Generated_Image_(2).png",
+  nadi:           "Gemini_Generated_Image_(1).png",
+  fiveseveneight: "Gemini_Generated_Image_6drz746drz746drz.png",
+  horse:          "Gemini_Generated_Image_8yrknp8yrknp8yrk.png",
+  meditation:     "Gemini_Generated_Image_placeholder_meditation.png",
+  bhramari:       "Gemini_Generated_Image_bhramari.png",
+  kapalabhati:    "Gemini_Generated_Image_kapalabhati.png",
+  coherent:       "coherent.png",
+  tactical:       "tactical.png",
+  sigh:           "sigh.png",
+  bhastrika:      "bhastrika.png",
+  ujjayi:         "ujjayi.png",
+  sitali:         "sitali.png"
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// DARK MODE IMAGES — shown when dark mode is ON
+// PLACEHOLDERS — drop dark-themed artwork into a /dark/ folder
+// alongside this HTML file, or change the paths below to whatever
+// filenames you prefer.
+// ═══════════════════════════════════════════════════════════════════
+const DARK_MODE_IMAGES = {
+  wimhof:         "dark/wimhof_dark.png",
+  box:            "dark/box_dark.png",
+  belly:          "dark/belly_dark.png",
+  nadi:           "dark/nadi_dark.png",
+  fiveseveneight: "dark/fiveseveneight_dark.png",
+  horse:          "dark/horse_dark.png",
+  meditation:     "dark/meditation_dark.png",
+  bhramari:       "dark/bhramari_dark.png",
+  kapalabhati:    "dark/kapalabhati_dark.png",
+  coherent:       "dark/coherent_dark.png",
+  tactical:       "dark/tactical_dark.png",
+  sigh:           "dark/sigh_dark.png",
+  bhastrika:      "dark/bhastrika_dark.png",
+  ujjayi:         "dark/ujjayi_dark.png",
+  sitali:         "dark/sitali_dark.png"
+};
+
+// Resolves the correct image for the active theme, with a light-mode fallback
+// if a dark asset is missing (broken-image fallback handled via onerror).
+function getImgForMode(mode){
+  const isDark = document.body.classList.contains('dark');
+  return (isDark ? DARK_MODE_IMAGES[mode] : LIGHT_MODE_IMAGES[mode]) || LIGHT_MODE_IMAGES[mode] || "";
+}
+function imgFallbackAttr(mode){
+  // If the dark asset 404s, fall back to the light one automatically
+  return `onerror="this.onerror=null;this.src='${LIGHT_MODE_IMAGES[mode]||''}';"`;
+}
+
 // ── DATA ──────────────────────────────────────────────────────────
 const intros={
-  wimhof:{title:"Wim Hof",desc:"Rapid cyclical breathing saturates the blood with oxygen, followed by an extended breath retention that activates the sympathetic nervous system and builds CO₂ tolerance. Each round ends with a recovery inhale held briefly before release.",img:"Gemini_Generated_Image_czxzw5czxzw5czxz.png"},
-  box:{title:"Box Breathing",desc:"Four equal phases — inhale, hold at top, exhale, hold at bottom — each timed identically. Widely used by athletes and military personnel to regulate the autonomic nervous system under pressure.",img:"Gemini_Generated_Image_.png"},
-  belly:{title:"Diaphragmatic",desc:"Breathing that prioritises the lower lungs using the diaphragm rather than the chest. A longer exhale than inhale activates the parasympathetic nervous system, reducing cortisol and lowering heart rate.",img:"Gemini_Generated_Image_(2).png"},
-  nadi:{title:"Alternate Nostril",desc:"A Hatha yoga technique that alternates airflow between nostrils. Each cycle inhales through one nostril and exhales through the other, promoting balance between the hemispheres and calming the mind.",img:"Gemini_Generated_Image_(1).png"},
-  fiveseveneight:{title:"5-7-8 Breathing",desc:"A structured ratio technique: inhale for 5 counts, hold for 7, exhale for 8. The extended hold and long exhale strongly stimulate the vagus nerve, producing rapid relaxation and reducing anxiety.",img:"Gemini_Generated_Image_6drz746drz746drz.png"},
-  horse:{title:"Horse Stance",desc:"Deep diaphragmatic breathing performed in or alongside a low, held stance from martial arts tradition. Sustained physical tension paired with controlled breath builds mental resilience and body awareness.",img:"Gemini_Generated_Image_8yrknp8yrknp8yrk.png"},
-  meditation:{title:"Meditation",desc:"A silent, unguided timer to support seated meditation or open-awareness practice. Natural breathing throughout. A chime marks the close of the session.",img:"Gemini_Generated_Image_placeholder_meditation.png"},
-  bhramari:{title:"Bhramari",desc:"Bee breath from the yogic tradition. A full nasal inhale is followed by a slow exhale accompanied by a steady humming sound. The vibration stimulates the vagus nerve, quiets mental activity, and draws the senses inward.",img:"Gemini_Generated_Image_bhramari.png"},
-  kapalabhati:{title:"Kapalabhati",desc:"Skull-shining breath: a rapid rhythmic pumping of the abdomen drives forceful nasal exhales while the inhale remains entirely passive. Energising and heat-generating, it is traditionally used as a cleansing kriya before seated practice.",img:"Gemini_Generated_Image_kapalabhati.png"},
-  coherent:{title:"Coherent Breathing",desc:"Breathing at precisely 5–6 cycles per minute with equal inhale and exhale durations. This rhythm maximises heart rate variability and synchronises cardiovascular, respiratory, and nervous system oscillations — the strongest known pattern for vagal tone.",img:"coherent.png"},
-  tactical:{title:"Tactical Breathing",desc:"A four-phase pattern used by military and emergency personnel: inhale 4, hold 4, exhale 6, hold 2. The asymmetric exhale-dominant rhythm is designed to restore clear cognitive function within seconds of acute stress onset.",img:"tactical.png"},
-  sigh:{title:"Physiological Sigh",desc:"A nasal sniff tops up the lungs after the first inhale, then a long slow exhale fully deflates them. Identified by Stanford neuroscience as the single most efficient breath pattern for rapidly reducing physiological arousal.",img:"sigh.png"},
-  bhastrika:{title:"Bhastrika",desc:"Bellows breath: both inhale and exhale are rapid, forceful, and equal in duration. Unlike Kapalabhati, the inhale is fully active. Strongly stimulating — raises oxygen saturation, generates internal heat, and clears the respiratory tract.",img:"bhastrika.png"},
-  ujjayi:{title:"Ujjayi",desc:"Ocean breath: the throat is lightly constricted on both inhale and exhale to produce a soft, audible sound. The technique slows the breath, generates internal heat, and creates an auditory focal point that anchors attention during practice or movement.",img:"ujjayi.png"},
-  sitali:{title:"Sitali",desc:"Cooling breath: inhale slowly through a rolled tongue or lightly parted teeth, then exhale through the nose. The incoming air is cooled and humidified before entering the lungs. Used in Ayurvedic practice to reduce body heat and calm the nervous system.",img:"sitali.png"}
+  wimhof:{title:"Wim Hof",desc:"Rapid cyclical breathing saturates the blood with oxygen, followed by an extended breath retention that activates the sympathetic nervous system and builds CO₂ tolerance. Each round ends with a recovery inhale held briefly before release.",imgLight:LIGHT_MODE_IMAGES.wimhof,imgDark:DARK_MODE_IMAGES.wimhof},
+  box:{title:"Box Breathing",desc:"Four equal phases — inhale, hold at top, exhale, hold at bottom — each timed identically. Widely used by athletes and military personnel to regulate the autonomic nervous system under pressure.",imgLight:LIGHT_MODE_IMAGES.box,imgDark:DARK_MODE_IMAGES.box},
+  belly:{title:"Diaphragmatic",desc:"Breathing that prioritises the lower lungs using the diaphragm rather than the chest. A longer exhale than inhale activates the parasympathetic nervous system, reducing cortisol and lowering heart rate.",imgLight:LIGHT_MODE_IMAGES.belly,imgDark:DARK_MODE_IMAGES.belly},
+  nadi:{title:"Alternate Nostril",desc:"A Hatha yoga technique that alternates airflow between nostrils. Each cycle inhales through one nostril and exhales through the other, promoting balance between the hemispheres and calming the mind.",imgLight:LIGHT_MODE_IMAGES.nadi,imgDark:DARK_MODE_IMAGES.nadi},
+  fiveseveneight:{title:"5-7-8 Breathing",desc:"A structured ratio technique: inhale for 5 counts, hold for 7, exhale for 8. The extended hold and long exhale strongly stimulate the vagus nerve, producing rapid relaxation and reducing anxiety.",imgLight:LIGHT_MODE_IMAGES.fiveseveneight,imgDark:DARK_MODE_IMAGES.fiveseveneight},
+  horse:{title:"Horse Stance",desc:"Deep diaphragmatic breathing performed in or alongside a low, held stance from martial arts tradition. Sustained physical tension paired with controlled breath builds mental resilience and body awareness.",imgLight:LIGHT_MODE_IMAGES.horse,imgDark:DARK_MODE_IMAGES.horse},
+  meditation:{title:"Meditation",desc:"A silent, unguided timer to support seated meditation or open-awareness practice. Natural breathing throughout. A chime marks the close of the session.",imgLight:LIGHT_MODE_IMAGES.meditation,imgDark:DARK_MODE_IMAGES.meditation},
+  bhramari:{title:"Bhramari",desc:"Bee breath from the yogic tradition. A full nasal inhale is followed by a slow exhale accompanied by a steady humming sound. The vibration stimulates the vagus nerve, quiets mental activity, and draws the senses inward.",imgLight:LIGHT_MODE_IMAGES.bhramari,imgDark:DARK_MODE_IMAGES.bhramari},
+  kapalabhati:{title:"Kapalabhati",desc:"Skull-shining breath: a rapid rhythmic pumping of the abdomen drives forceful nasal exhales while the inhale remains entirely passive. Energising and heat-generating, it is traditionally used as a cleansing kriya before seated practice.",imgLight:LIGHT_MODE_IMAGES.kapalabhati,imgDark:DARK_MODE_IMAGES.kapalabhati},
+  coherent:{title:"Coherent Breathing",desc:"Breathing at precisely 5–6 cycles per minute with equal inhale and exhale durations. This rhythm maximises heart rate variability and synchronises cardiovascular, respiratory, and nervous system oscillations — the strongest known pattern for vagal tone.",imgLight:LIGHT_MODE_IMAGES.coherent,imgDark:DARK_MODE_IMAGES.coherent},
+  tactical:{title:"Tactical Breathing",desc:"A four-phase pattern used by military and emergency personnel: inhale 4, hold 4, exhale 6, hold 2. The asymmetric exhale-dominant rhythm is designed to restore clear cognitive function within seconds of acute stress onset.",imgLight:LIGHT_MODE_IMAGES.tactical,imgDark:DARK_MODE_IMAGES.tactical},
+  sigh:{title:"Physiological Sigh",desc:"A nasal sniff tops up the lungs after the first inhale, then a long slow exhale fully deflates them. Identified by Stanford neuroscience as the single most efficient breath pattern for rapidly reducing physiological arousal.",imgLight:LIGHT_MODE_IMAGES.sigh,imgDark:DARK_MODE_IMAGES.sigh},
+  bhastrika:{title:"Bhastrika",desc:"Bellows breath: both inhale and exhale are rapid, forceful, and equal in duration. Unlike Kapalabhati, the inhale is fully active. Strongly stimulating — raises oxygen saturation, generates internal heat, and clears the respiratory tract.",imgLight:LIGHT_MODE_IMAGES.bhastrika,imgDark:DARK_MODE_IMAGES.bhastrika},
+  ujjayi:{title:"Ujjayi",desc:"Ocean breath: the throat is lightly constricted on both inhale and exhale to produce a soft, audible sound. The technique slows the breath, generates internal heat, and creates an auditory focal point that anchors attention during practice or movement.",imgLight:LIGHT_MODE_IMAGES.ujjayi,imgDark:DARK_MODE_IMAGES.ujjayi},
+  sitali:{title:"Sitali",desc:"Cooling breath: inhale slowly through a rolled tongue or lightly parted teeth, then exhale through the nose. The incoming air is cooled and humidified before entering the lungs. Used in Ayurvedic practice to reduce body heat and calm the nervous system.",imgLight:LIGHT_MODE_IMAGES.sitali,imgDark:DARK_MODE_IMAGES.sitali}
 };
 const defaultConfigs={
-  wimhof:{wimTotalRounds:1,rounds:30,inhale:1.8,exhale:1.8,hold:90,recover:15},
-  box:{rounds:1,boxInhale:4,boxHoldTop:4,boxExhale:4,boxHoldBottom:4},
-  belly:{rounds:1,inhale:4,exhale:6},
-  nadi:{rounds:1,inhale:4,exhale:4},
-  fiveseveneight:{rounds:1,fInhale:5,fHold:7,fExhale:8},
-  horse:{rounds:1,inhale:4,exhale:6},
-  meditation:{mDuration:1},
+  wimhof:{wimTotalRounds:1,rounds:30,inhale:1.5,exhale:1.5,hold:90,recover:15},
+  box:{rounds:8,boxInhale:4,boxHoldTop:4,boxExhale:4,boxHoldBottom:4},
+  belly:{rounds:12,inhale:4,exhale:6},
+  nadi:{rounds:8,inhale:4,exhale:4},
+  fiveseveneight:{rounds:6,fInhale:5,fHold:7,fExhale:8},
+  horse:{rounds:10,inhale:4,exhale:6},
+  meditation:{mDuration:5},
   bhramari:{rounds:6,inhale:4,exhale:7},
   kapalabhati:{rounds:3,pumps:30,pumpSpeed:0.5},
   coherent:{rounds:10,inhale:5,exhale:5},
@@ -533,7 +651,7 @@ let sessionStartTime=0,audioCtx;
 
 // Saves the callback so pause can restart the exact same interval on resume
 function startInterval(cb){state.intervalCb=cb;state.interval=setInterval(cb,1000);}
-let sessionQueue=[],sessionQueueIndex=0,isSessionMode=false,currentView='home',pickerTargetSlot=-1;
+let sessionQueue=[],sessionQueueIndex=0,isSessionMode=false,currentView='session',pickerTargetSlot=-1;
 
 // ── NAV ───────────────────────────────────────────────────────────
 function toggleDrawer(){
@@ -789,12 +907,26 @@ function renderMenu(){
   els.menuGrid.innerHTML='';
   for(const [mode,data] of Object.entries(intros)){
     const card=document.createElement('div');card.className='menu-card';card.onclick=()=>handleCardClick(card,mode);
-    card.innerHTML=`<img class="menu-card-img" src="${data.img}" alt="${data.title}"><div class="menu-card-content"><h3>${data.title}</h3><p>${data.desc}</p></div>`;
+    const src=getImgForMode(mode);
+    card.innerHTML=`<img class="menu-card-img" src="${src}" ${imgFallbackAttr(mode)} alt="${data.title}"><div class="menu-card-content"><h3>${data.title}</h3><p>${data.desc}</p></div>`;
     els.menuGrid.appendChild(card);
   }
 }
 function handleCardClick(c,mode){c.classList.add('clicked');setTimeout(()=>{c.classList.remove('clicked');openIntro(mode);},250);}
 renderMenu();
+
+// Re-render menu images when dark mode toggles so the correct image set shows
+(function(){
+  const originalToggle=window.toggleDarkMode;
+  window.toggleDarkMode=function(){
+    originalToggle();
+    renderMenu();
+    // Also refresh the open intro panel image if it's visible
+    if(els.introPanel.classList.contains('visible')&&activeMode){
+      els.introImage.src=getImgForMode(activeMode);
+    }
+  };
+})();
 
 document.getElementById('qWimRounds').addEventListener('input',e=>document.getElementById('wTotalRounds').value=e.target.value);
 document.getElementById('wTotalRounds').addEventListener('input',e=>document.getElementById('qWimRounds').value=e.target.value);
@@ -805,7 +937,11 @@ function setText(el,val,color){const next=String(val).trim();if(el.innerHTML.tri
 
 function openIntro(mode){
   activeMode=mode;els.introTitle.innerText=intros[mode].title;els.introDesc.innerText=intros[mode].desc;
-  if(intros[mode].img)els.introImage.src=intros[mode].img;
+  const src=getImgForMode(mode);
+  if(src){
+    els.introImage.src=src;
+    els.introImage.onerror=function(){this.onerror=null;this.src=LIGHT_MODE_IMAGES[mode]||'';};
+  }
   document.getElementById('wimHofQuickConfig').style.display=mode==='wimhof'?'block':'none';
   els.modalOverlay.classList.add('visible');els.menuWrapper.classList.add('fade-out');
   setTimeout(()=>els.introPanel.classList.add('visible'),100);
@@ -1586,6 +1722,37 @@ function resetHaloToIdle(){
   els.boxPath.classList.remove('active');els.boxPath.style.animation="none";els.boxDot.style.transition="none";els.boxDot.style.top="100%";els.boxDot.style.left="0%";
 }
 function formatTime(s){if(s<0)return"0:00";const m=Math.floor(s/60),sec=s%60;return`${m}:${sec<10?'0'+sec:sec}`;}
+
+// ── DESKTOP WHEEL FORWARDING ──────────────────────────────────────
+// When the cursor is over the halo area (outside the panel), wheel events
+// still scroll the currently-visible panel rather than going nowhere.
+(function(){
+  const panelIds=['menuWrapper','sessionView','statsView'];
+  function getActivePanel(){
+    for(const id of panelIds){
+      const el=document.getElementById(id);
+      if(!el)continue;
+      const cs=getComputedStyle(el);
+      if(cs.pointerEvents==='auto'&&parseFloat(cs.opacity)>0.5)return el;
+    }
+    return null;
+  }
+  document.addEventListener('wheel',function(e){
+    if(state.phase!==PHASE_IDLE)return;
+    const panel=getActivePanel();
+    if(!panel)return;
+    if(panel.contains(e.target))return;
+    if(panel.scrollHeight<=panel.clientHeight)return;
+    panel.scrollTop+=e.deltaY;
+    e.preventDefault();
+  },{passive:false});
+})();
+
+// ── STARTUP: Session is the primary view ──────────────────────────
+// Make the Session screen the default landing view instead of Home.
+document.addEventListener('DOMContentLoaded',()=>{navTo('session');});
+// Handle case where DOMContentLoaded has already fired
+if(document.readyState==='interactive'||document.readyState==='complete'){navTo('session');}
 </script>
 </body>
 </html>
